@@ -51,7 +51,8 @@ public class XHideView extends XHookBase {
                     }
                 }
             });
-        } else if (hidereadstatus) {
+        }
+        if (hidereadstatus) {
             var classMessage = XposedHelpers.findClass(ClassesReference.HideView.classMessage, loader);
             XposedHelpers.findAndHookMethod(classMessageReceipt, loader, methodMessageReceipt, classMessage, new XC_MethodReplacement() {
                 @Override

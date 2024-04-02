@@ -117,12 +117,12 @@ public class XOthers extends XHookBase {
                 }
                 var shared = mApp.getSharedPreferences(mApp.getPackageName() + "_mdgwa_preferences", Context.MODE_PRIVATE);
                 var dndmode = shared.getBoolean("dndmode", false);
-                var cu = mApp.getDrawable(iconOn);
+                var iconDND = mApp.getDrawable(iconOn);
                 if (dndmode) {
-                    cu = mApp.getDrawable(iconOff);
+                    iconDND = mApp.getDrawable(iconOff);
                 }
                 var item = menu.add(0, 0, 1, "Dnd Mode " + dndmode);
-                item.setIcon(cu);
+                item.setIcon(iconDND);
                 item.setShowAsAction(2);
                 item.setOnMenuItemClickListener(menuItem -> {
                     if (!dndmode) {
@@ -146,7 +146,6 @@ public class XOthers extends XHookBase {
                     }
 
                     shared.edit().putBoolean("dndmode", dndmode ? false : true).commit();
-                    XposedBridge.log(String.valueOf(shared.getBoolean("dndmode", false)));
 
                     Intent intent = mApp.getPackageManager().getLaunchIntentForPackage(mApp.getPackageName());
                     if (mApp != null) {
