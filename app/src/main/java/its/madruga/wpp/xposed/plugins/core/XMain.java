@@ -23,7 +23,6 @@ import its.madruga.wpp.xposed.models.XHookBase;
 import its.madruga.wpp.xposed.plugins.functions.XAntiRevoke;
 import its.madruga.wpp.xposed.plugins.functions.XDndMode;
 import its.madruga.wpp.xposed.plugins.functions.XMediaQuality;
-import its.madruga.wpp.xposed.plugins.functions.XNewChat;
 import its.madruga.wpp.xposed.plugins.functions.XOthers;
 import its.madruga.wpp.xposed.plugins.functions.XShareLimit;
 import its.madruga.wpp.xposed.plugins.functions.XStatusDownload;
@@ -81,29 +80,26 @@ public class XMain {
 
     private static void plugins(@NonNull ClassLoader loader, @NonNull XSharedPreferences pref) {
         ArrayList<String> loadedClasses = new ArrayList<>();
+
         var classes = new Class<?>[]{
-                XOthers.class,
-                XDndMode.class,
-                XHideTag.class,
-                XHideView.class,
-                XViewOnce.class,
-                XGhostMode.class,
                 XAntiRevoke.class,
                 XBioAndName.class,
-                XShareLimit.class,
-                XChatsFilter.class,
-                XHideReceipt.class,
-                XChangeColors.class,
-                XMediaQuality.class,
                 XBubbleColors.class,
-                XSecondsToTime.class,
-                XStatusDownload.class,
-                XStatusDownload.class,
+                XChangeColors.class,
+                XChatsFilter.class,
+                XDndMode.class,
                 XFreezeLastSeen.class,
-                XNewChat.class
+                XGhostMode.class,
+                XHideReceipt.class,
+                XHideTag.class,
+                XHideView.class,
+                XMediaQuality.class,
+                XOthers.class,
+                XSecondsToTime.class,
+                XShareLimit.class,
+                XStatusDownload.class,
+                XViewOnce.class,
         };
-
-
 
         for (var classe : classes) {
             try {
