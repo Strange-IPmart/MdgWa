@@ -36,8 +36,8 @@ public class DesignUtils {
 
 
     @SuppressLint("UseCompatLoadingForDrawables")
-    public static Drawable alphaDrawable(Drawable drawable, int primaryTextColor, BlendMode mode, int i) {
-        Drawable coloredDrawable = DesignUtils.coloredDrawable(drawable, primaryTextColor, mode);
+    public static Drawable alphaDrawable(Drawable drawable, int color, BlendMode mode, int i) {
+        Drawable coloredDrawable = DesignUtils.coloredDrawable(drawable, color, mode);
         coloredDrawable.setAlpha(i);
         return coloredDrawable;
     }

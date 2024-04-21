@@ -13,7 +13,6 @@ import android.view.Menu;
 
 import androidx.annotation.NonNull;
 
-import java.util.Date;
 import java.util.HashMap;
 
 import de.robv.android.xposed.XC_MethodHook;
@@ -95,6 +94,7 @@ public class XOthers extends XHookBase {
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Menu menu = (Menu) param.args[0];
                 Activity home = (Activity) param.thisObject;
+                @SuppressLint({"UseCompatLoadingForDrawables", "DiscouragedApi"})
                 var iconDraw = home.getDrawable(home.getResources().getIdentifier("vec_account_switcher", "drawable", home.getPackageName()));
                 iconDraw.setTint(0xff8696a0);
                 menu.add(0, 0, 0, ResId.string.restart_whatsapp).setIcon(iconDraw).setOnMenuItemClickListener(item -> {

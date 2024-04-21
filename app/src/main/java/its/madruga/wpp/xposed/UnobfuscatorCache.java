@@ -24,7 +24,7 @@ public class UnobfuscatorCache {
 
     private final Application mApp;
     private static UnobfuscatorCache mInstance;
-    private SharedPreferences mShared;
+    private final SharedPreferences mShared;
 
     private final Map<String, String> reverseResourceMap = new HashMap<>();
 
@@ -38,7 +38,7 @@ public class UnobfuscatorCache {
             long savedUpdateTime = mShared.getLong("updateTime", 0);
             long lastUpdateTime = shared.getLong("lastUpdateTime", -1);
             if (version != currentVersion || savedUpdateTime != lastUpdateTime) {
-                mShared.edit().clear().commit();
+                mShared.edit().clear();
                 mShared.edit().putLong("version", currentVersion).commit();
                 mShared.edit().putLong("updateTime", lastUpdateTime).commit();
             }

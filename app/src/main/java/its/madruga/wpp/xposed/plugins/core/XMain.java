@@ -1,13 +1,10 @@
 package its.madruga.wpp.xposed.plugins.core;
 
-import static its.madruga.wpp.BuildConfig.DEBUG;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -44,6 +41,7 @@ import its.madruga.wpp.xposed.plugins.functions.XPinnedLimit;
 import its.madruga.wpp.xposed.plugins.functions.XShareLimit;
 import its.madruga.wpp.xposed.plugins.functions.XStatusDownload;
 import its.madruga.wpp.xposed.plugins.functions.XViewOnce;
+import its.madruga.wpp.xposed.plugins.personalization.XStatusHome;
 import its.madruga.wpp.xposed.plugins.personalization.XBioAndName;
 import its.madruga.wpp.xposed.plugins.personalization.XBubbleColors;
 import its.madruga.wpp.xposed.plugins.personalization.XChangeColors;
@@ -79,8 +77,7 @@ public class XMain {
                 XposedBridge.log(packageInfo.versionName);
                 plugins(loader, pref);
                 registerReceivers();
-                if (DEBUG)
-                    XposedHelpers.setStaticIntField(XposedHelpers.findClass("com.whatsapp.util.Log", loader), "level", 5);
+//                    XposedHelpers.setStaticIntField(XposedHelpers.findClass("com.whatsapp.util.Log", loader), "level", 5);
             }
         });
 
@@ -137,6 +134,7 @@ public class XMain {
                 XSecondsToTime.class,
                 XShareLimit.class,
                 XStatusDownload.class,
+                XStatusHome.class,
                 XViewOnce.class,
         };
 
