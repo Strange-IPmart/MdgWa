@@ -69,8 +69,11 @@ public class XMain {
             @SuppressWarnings("deprecation")
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 mApp = (Application) param.args[0];
+
                 new UnobfuscatorCache(mApp,pref);
                 XDatabases.Initialize(loader, pref);
+                WppCore.Initialize(loader);
+
                 PackageManager packageManager = mApp.getPackageManager();
                 pref.registerOnSharedPreferenceChangeListener((sharedPreferences, s) -> pref.reload());
                 PackageInfo packageInfo = packageManager.getPackageInfo(mApp.getPackageName(), 0);
