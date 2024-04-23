@@ -1,5 +1,6 @@
 package its.madruga.wpp.views;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -14,6 +15,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
+@SuppressLint("AppCompatCustomView")
 public class RoundedImageView extends ImageView
 {
 
