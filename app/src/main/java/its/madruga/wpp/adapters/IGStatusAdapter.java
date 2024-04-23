@@ -27,6 +27,8 @@ import java.util.Objects;
 
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import its.madruga.wpp.xposed.Unobfuscator;
+import its.madruga.wpp.xposed.UnobfuscatorCache;
 import its.madruga.wpp.xposed.plugins.core.DesignUtils;
 import its.madruga.wpp.xposed.plugins.core.Utils;
 import its.madruga.wpp.xposed.plugins.core.WppCore;
@@ -48,18 +50,20 @@ public class IGStatusAdapter extends ArrayAdapter {
         public void setInfo(Object item) {
             if (Objects.equals(item, "my_status")) {
                 myStatus = true;
-                igStatusContactName.setText(WppCore.getMyName());
+                igStatusContactName.setText(UnobfuscatorCache.getInstance().getString("mystatus"));
                 igStatusContactPhoto.setImageDrawable(WppCore.getMyPhoto());
                 setCountStatus(0, 0);
                 return;
             }
             var statusInfo = XposedHelpers.getObjectField(item, "A01");
-            var userJid = XposedHelpers.getObjectField(statusInfo, "A0A");
+            var field = Unobfuscator.getFieldByType(statusInfo.getClass(), XposedHelpers.findClass("com.whatsapp.jid.UserJid", statusInfoClazz.getClassLoader()));
+            var userJid = XposedHelpers.getObjectField(statusInfo, field.getName());
             var contactName = WppCore.getContactName(userJid);
-            var rawJid = WppCore.getRawString(userJid);
-            jid = rawJid;
+            jid = WppCore.getRawString(userJid);
             igStatusContactName.setText(contactName);
-            igStatusContactPhoto.setImageDrawable(WppCore.getContactPhoto(rawJid));
+            var profile = WppCore.getContactPhoto(jid);
+            if (profile == null) profile = DesignUtils.getDrawableByName("avatar_contact");
+            igStatusContactPhoto.setImageDrawable(profile);
             var countUnseen = XposedHelpers.getIntField(statusInfo, "A01");
             var total = XposedHelpers.getIntField(statusInfo, "A00");
             setCountStatus(countUnseen, total);

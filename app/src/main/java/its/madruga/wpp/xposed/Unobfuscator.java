@@ -5,6 +5,7 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -53,7 +54,7 @@ public class Unobfuscator {
     public static final String BUBBLE_COLORS_BALLOON_INCOMING_NORMAL_EXT = "balloon_incoming_normal_ext";
     public static final String BUBBLE_COLORS_BALLOON_OUTGOING_NORMAL = "balloon_outgoing_normal";
     public static final String BUBBLE_COLORS_BALLOON_OUTGOING_NORMAL_EXT = "balloon_outgoing_normal_ext";
-    public static final HashMap cache = new HashMap();
+    public static final HashMap<String, Object> cache = new HashMap();
 
     static {
         System.loadLibrary("dexkit");
@@ -224,9 +225,7 @@ public class Unobfuscator {
     }
 
     public static Class<?> loadReadReceiptsClass(ClassLoader classLoader) throws Exception {
-        return UnobfuscatorCache.getInstance().getClass(classLoader, () -> {
-            return findFirstClassUsingStrings(classLoader, StringMatchType.Contains, "acknowledgeMessageSilent");
-        });
+        return UnobfuscatorCache.getInstance().getClass(classLoader, () -> findFirstClassUsingStrings(classLoader, StringMatchType.Contains, "acknowledgeMessageSilent"));
     }
 
     public static Method loadHideViewJidMethod(ClassLoader classLoader) throws Exception {
@@ -252,7 +251,7 @@ public class Unobfuscator {
 
     // TODO: Classes and Methods for BubbleColors
     @SuppressLint("DiscouragedApi")
-    private static ClassDataList loadBubbleColorsClass() throws Exception {
+    private static ClassDataList loadBubbleColorsClass() {
         if (cache.containsKey("balloon")) return (ClassDataList) cache.get("balloon");
         var balloonIncomingNormal = XMain.mApp.getResources().getIdentifier(BUBBLE_COLORS_BALLOON_INCOMING_NORMAL, "drawable", XMain.mApp.getPackageName());
         var balloonIncomingNormalExt = XMain.mApp.getResources().getIdentifier(BUBBLE_COLORS_BALLOON_INCOMING_NORMAL_EXT, "drawable", XMain.mApp.getPackageName());
@@ -701,16 +700,16 @@ public class Unobfuscator {
         });
     }
 
-    public static Method loadDeprecatedMethod(ClassLoader loader) throws Exception {
-        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
-            var methods = findAllMethodUsingStrings(loader, StringMatchType.Contains, "software_forced_expiration");
-            if (methods == null || methods.length == 0)
-                throw new Exception("Deprecated method not found");
-            var result = Arrays.stream(methods).filter(method -> method.getReturnType().equals(Date.class)).findFirst().orElse(null);
-            if (result == null) throw new Exception("Deprecated method not found");
-            return result;
-        });
-    }
+//    public static Method loadDeprecatedMethod(ClassLoader loader) throws Exception {
+//        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
+//            var methods = findAllMethodUsingStrings(loader, StringMatchType.Contains, "software_forced_expiration");
+//            if (methods == null || methods.length == 0)
+//                throw new Exception("Deprecated method not found");
+//            var result = Arrays.stream(methods).filter(method -> method.getReturnType().equals(Date.class)).findFirst().orElse(null);
+//            if (result == null) throw new Exception("Deprecated method not found");
+//            return result;
+//        });
+//    }
 
     public static Method loadPropsMethod(ClassLoader loader) throws Exception {
         return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
@@ -845,13 +844,13 @@ public class Unobfuscator {
         });
     }
 
-    public static Class<?> loadAxolotlClass(ClassLoader loader) throws Exception {
-        return UnobfuscatorCache.getInstance().getClass(loader, () -> {
-            var result = findFirstClassUsingStrings(loader, StringMatchType.Contains, "failed to open axolotl store");
-            if (result == null) throw new Exception("Axolotl class not found");
-            return result;
-        });
-    }
+//    public static Class<?> loadAxolotlClass(ClassLoader loader) throws Exception {
+//        return UnobfuscatorCache.getInstance().getClass(loader, () -> {
+//            var result = findFirstClassUsingStrings(loader, StringMatchType.Contains, "failed to open axolotl store");
+//            if (result == null) throw new Exception("Axolotl class not found");
+//            return result;
+//        });
+//    }
 
     public static Method loadBlueOnReplayMessageJobMethod(ClassLoader loader) throws Exception {
         return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
@@ -1237,6 +1236,15 @@ public class Unobfuscator {
             var clazz = findFirstClassUsingStrings(loader, StringMatchType.Contains, "StatusListUpdates");
             if (clazz == null) throw new RuntimeException("StatusListUpdates class not found");
             return clazz;
+        });
+    }
+
+    public static Method loadOnTabItemSelectMethod(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
+            var clazz = loadEnableCountTabMethod(loader).getDeclaringClass();
+            var method = Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(MenuItem.class)).findFirst().orElse(null);
+            if (method == null) throw new RuntimeException("OnTabItemSelect method not found");
+            return method;
         });
     }
 }

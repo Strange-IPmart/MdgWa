@@ -29,7 +29,7 @@ import its.madruga.wpp.xposed.plugins.core.WppCore;
 
 public class XIGStatus extends XHookBase {
     public static ArrayList<Object> itens = new ArrayList<>();
-    private static IGStatusAdapter mStatusAdapter;
+    @SuppressLint("StaticFieldLeak")
     private static IGStatusView mStatusContainer;
 
     public XIGStatus(@NonNull ClassLoader loader, @NonNull XSharedPreferences preferences) {
@@ -39,7 +39,7 @@ public class XIGStatus extends XHookBase {
     @Override
     public void doHook() throws Throwable {
 
-        if (!prefs.getBoolean("igstatus", false))return;
+        if (!prefs.getBoolean("igstatus", false)) return;
 
         var clazz = XposedHelpers.findClass("com.whatsapp.HomeActivity", loader).getSuperclass();
         XposedHelpers.findAndHookMethod(clazz, "onCreate", android.os.Bundle.class, new XC_MethodHook() {
@@ -51,7 +51,7 @@ public class XIGStatus extends XHookBase {
                 mStatusContainer = new IGStatusView(homeActivity);
                 var layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, Utils.dipToPixels(105));
                 layoutParams.gravity = Gravity.TOP;
-                layoutParams.topMargin = Utils.dipToPixels(56);
+                layoutParams.topMargin = prefs.getBoolean("barfilter", false) ? Utils.dipToPixels(112) : Utils.dipToPixels(56);
                 mStatusContainer.setLayoutParams(layoutParams);
                 mStatusContainer.setBackgroundColor(Color.TRANSPARENT);
                 var mainContainer = homeActivity.findViewById(Utils.getID("main_container", "id"));
@@ -78,6 +78,8 @@ public class XIGStatus extends XHookBase {
         XposedBridge.hookMethod(getViewConversationMethod, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if (XposedHelpers.findClass("com.whatsapp.conversationslist.ArchivedConversationsFragment", loader).isInstance(param.thisObject))
+                    return;
                 var view = (ViewGroup) param.getResult();
                 if (view == null) return;
                 @SuppressLint("ResourceType")
@@ -94,6 +96,7 @@ public class XIGStatus extends XHookBase {
         // hide on tab
 
         var onMenuItemSelected = Unobfuscator.loadOnMenuItemSelected(loader);
+        var separateGroups = prefs.getBoolean("separategroups", false);
 
         XposedBridge.hookMethod(onMenuItemSelected, new XC_MethodHook() {
             @Override
@@ -101,7 +104,10 @@ public class XIGStatus extends XHookBase {
                 var index = (int) param.args[0];
                 WppCore.getMainActivity().runOnUiThread(() -> {
                     XposedHelpers.setObjectField(WppCore.getMainActivity(), "A02", 0);
-                    var visible = index != 0 && index != 1 ? View.GONE : View.VISIBLE;
+                    var visible = View.GONE;
+                    if (index == 0 || (index == 1 && separateGroups)) {
+                        visible = View.VISIBLE;
+                    }
                     if (mStatusContainer.getVisibility() != visible)
                         mStatusContainer.setVisibility(visible);
                     if (visible == View.VISIBLE) mStatusContainer.setTranslationY(0);
@@ -120,7 +126,7 @@ public class XIGStatus extends XHookBase {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 itens.add(0, null);
-                mStatusAdapter = new IGStatusAdapter(WppCore.getMainActivity(), statusInfoClass);
+                IGStatusAdapter mStatusAdapter = new IGStatusAdapter(WppCore.getMainActivity(), statusInfoClass);
                 mStatusContainer.setAdapter(mStatusAdapter);
                 mStatusContainer.updateList();
             }

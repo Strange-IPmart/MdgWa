@@ -3,6 +3,7 @@ package its.madruga.wpp.xposed.plugins.core;
 import static its.madruga.wpp.xposed.plugins.functions.XAntiRevoke.stripJID;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
@@ -24,19 +25,21 @@ public class WppCore {
     private static Method getContactMethod;
     private static Class<?> mGenJidClass;
     private static Method mGenJidMethod;
+    private static Class bottomDialog;
 
     public static void Initialize(ClassLoader loader) throws Throwable {
 
         // init Main activity
         XposedBridge.hookAllMethods(XposedHelpers.findClass("com.whatsapp.HomeActivity", loader), "onCreate", new XC_MethodHook() {
             @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 mainActivity = param.thisObject;
             }
         });
+
         XposedBridge.hookAllMethods(XposedHelpers.findClass("com.whatsapp.HomeActivity", loader), "onResume", new XC_MethodHook() {
             @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 mainActivity = param.thisObject;
             }
         });
@@ -50,6 +53,9 @@ public class WppCore {
         var subClass = Arrays.stream(mSendReadClass.getConstructors()).filter(c -> c.getParameterTypes().length == 8).findFirst().orElse(null).getParameterTypes()[0];
         mGenJidClass = Arrays.stream(subClass.getFields()).filter(field -> Modifier.isStatic(field.getModifiers())).findFirst().orElse(null).getType();
         mGenJidMethod = Arrays.stream(mGenJidClass.getMethods()).filter(m -> m.getParameterCount() == 1 && !Modifier.isStatic(m.getModifiers())).findFirst().orElse(null);
+
+        // Bottom Dialog
+        bottomDialog = Unobfuscator.loadDialogViewClass(loader);
     }
 
     public static Object getContactManager() {
@@ -121,4 +127,9 @@ public class WppCore {
         var mainPrefs = Utils.getApplication().getSharedPreferences(Utils.getApplication().getPackageName() + "_preferences_light", Context.MODE_PRIVATE);
         return mainPrefs.getString("registration_jid", "");
     }
+
+    public static Dialog createDialog(Context context) {
+        return (Dialog) XposedHelpers.newInstance(bottomDialog, context);
+    }
+
 }
