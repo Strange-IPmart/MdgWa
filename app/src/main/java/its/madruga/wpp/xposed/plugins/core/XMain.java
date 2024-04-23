@@ -41,7 +41,7 @@ import its.madruga.wpp.xposed.plugins.functions.XPinnedLimit;
 import its.madruga.wpp.xposed.plugins.functions.XShareLimit;
 import its.madruga.wpp.xposed.plugins.functions.XStatusDownload;
 import its.madruga.wpp.xposed.plugins.functions.XViewOnce;
-import its.madruga.wpp.xposed.plugins.personalization.XStatusHome;
+import its.madruga.wpp.xposed.plugins.personalization.XIGStatus;
 import its.madruga.wpp.xposed.plugins.personalization.XBioAndName;
 import its.madruga.wpp.xposed.plugins.personalization.XBubbleColors;
 import its.madruga.wpp.xposed.plugins.personalization.XChangeColors;
@@ -70,6 +70,7 @@ public class XMain {
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 mApp = (Application) param.args[0];
 
+                DesignUtils.mPrefs = pref;
                 new UnobfuscatorCache(mApp,pref);
                 XDatabases.Initialize(loader, pref);
                 WppCore.Initialize(loader);
@@ -130,6 +131,7 @@ public class XMain {
                 XHideReceipt.class,
                 XHideTag.class,
                 XHideView.class,
+                XIGStatus.class,
                 XMediaQuality.class,
                 XNewChat.class,
                 XOthers.class,
@@ -137,7 +139,6 @@ public class XMain {
                 XSecondsToTime.class,
                 XShareLimit.class,
                 XStatusDownload.class,
-                XStatusHome.class,
                 XViewOnce.class,
         };
 

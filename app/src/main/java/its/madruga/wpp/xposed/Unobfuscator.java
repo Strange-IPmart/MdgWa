@@ -2,6 +2,7 @@ package its.madruga.wpp.xposed;
 
 import android.annotation.SuppressLint;
 import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import de.robv.android.xposed.XposedBridge;
@@ -124,12 +126,12 @@ public class Unobfuscator {
     }
 
     public static boolean isCalledFromClass(Class<?> cls) {
-      var trace = Thread.currentThread().getStackTrace();
-      for (StackTraceElement stackTraceElement : trace) {
-        if (stackTraceElement.getClassName().equals(cls.getName()))
-          return true;
-      }
-      return false;
+        var trace = Thread.currentThread().getStackTrace();
+        for (StackTraceElement stackTraceElement : trace) {
+            if (stackTraceElement.getClassName().equals(cls.getName()))
+                return true;
+        }
+        return false;
     }
 
 
@@ -389,15 +391,15 @@ public class Unobfuscator {
     }
 
     public static Constructor loadEnableCountTabConstructor1(ClassLoader classLoader) throws Exception {
-       var countMethod = loadEnableCountTabMethod(classLoader);
-       var indiceClass = countMethod.getParameterTypes()[1];
-       var result = dexkit.findClass(new FindClass().matcher(new ClassMatcher().superClass(indiceClass.getName()).addMethod(new MethodMatcher().paramCount(1))));
-       if (result.isEmpty()) throw new Exception("EnableCountTab method not found");
-       return result.get(0).getInstance(classLoader).getConstructors()[0];
+        var countMethod = loadEnableCountTabMethod(classLoader);
+        var indiceClass = countMethod.getParameterTypes()[1];
+        var result = dexkit.findClass(new FindClass().matcher(new ClassMatcher().superClass(indiceClass.getName()).addMethod(new MethodMatcher().paramCount(1))));
+        if (result.isEmpty()) throw new Exception("EnableCountTab method not found");
+        return result.get(0).getInstance(classLoader).getConstructors()[0];
     }
 
     public static Constructor loadEnableCountTabConstructor2(ClassLoader classLoader) throws Exception {
-        var countTabConstructor1 =  loadEnableCountTabConstructor1(classLoader);
+        var countTabConstructor1 = loadEnableCountTabConstructor1(classLoader);
         var indiceClass = countTabConstructor1.getParameterTypes()[0];
         var result = dexkit.findClass(new FindClass().matcher(new ClassMatcher().superClass(indiceClass.getName()).addMethod(new MethodMatcher().paramCount(1).addParamType(int.class))));
         if (result.isEmpty()) throw new Exception("EnableCountTab method not found");
@@ -405,7 +407,7 @@ public class Unobfuscator {
     }
 
     public static Constructor loadEnableCountTabConstructor3(ClassLoader classLoader) throws Exception {
-        var countTabConstructor1 =  loadEnableCountTabConstructor1(classLoader);
+        var countTabConstructor1 = loadEnableCountTabConstructor1(classLoader);
         var indiceClass = countTabConstructor1.getParameterTypes()[0];
         var result = dexkit.findClass(new FindClass().matcher(new ClassMatcher().superClass(indiceClass.getName()).addMethod(new MethodMatcher().paramCount(0))));
         if (result.isEmpty()) throw new Exception("EnableCountTab method not found");
@@ -1155,4 +1157,86 @@ public class Unobfuscator {
     }
 
 
+    public static Method loadOnTabItemAddMethod(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
+            var result = findFirstClassUsingStrings(loader, StringMatchType.Contains, "MenuItemCompat.getActionProvider");
+            if (result == null) throw new RuntimeException("OnTabItemAdd Class not found");
+            var method = Arrays.stream(result.getDeclaredMethods()).filter(m -> m.getName().equals("isVisible")).findFirst().orElse(null);
+            if (method == null) throw new RuntimeException("OnTabItemAdd method not found");
+            return method;
+        });
+    }
+
+    public static Method loadScrollPagerMethod(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
+            var result = findAllMethodUsingStrings(loader, StringMatchType.Contains, "search_fragment");
+            if (result == null) throw new RuntimeException("ScrollPager methods not found");
+            var method = Arrays.stream(result).filter(m -> m.getName().equals("onScroll")).findFirst().orElse(null);
+            if (method == null) throw new RuntimeException("ScrollPager method not found");
+            return method;
+        });
+    }
+
+    public static Method loadGetViewConversationMethod(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
+            var clazz = XposedHelpers.findClass("com.whatsapp.conversationslist.ConversationsFragment", loader);
+            var method = Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.getParameterCount() == 3 && m.getReturnType().equals(View.class) && m.getParameterTypes()[1].equals(LayoutInflater.class)).findFirst().orElse(null);
+            if (method == null) throw new RuntimeException("GetViewConversation method not found");
+            return method;
+        });
+    }
+
+    public static Method loadOnMenuItemSelected(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
+            var aClass = XposedHelpers.findClass("androidx.viewpager.widget.ViewPager", loader);
+            var result = Arrays.stream(aClass.getDeclaredMethods()).
+                    filter(m -> m.getParameterCount() == 4 &&
+                            m.getParameterTypes()[0].equals(int.class) &&
+                            m.getParameterTypes()[1].equals(int.class) &&
+                            m.getParameterTypes()[2].equals(boolean.class) &&
+                            m.getParameterTypes()[3].equals(boolean.class)
+                    ).collect(Collectors.toList());
+            if (result.isEmpty()) throw new RuntimeException("OnMenuItemSelected method not found");
+            return result.get(1);
+        });
+    }
+
+    public static Method loadOnUpdateStatusChanged(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
+            var clazz = XposedHelpers.findClass("com.whatsapp.updates.viewmodels.UpdatesViewModel", loader);
+            var clazzData = dexkit.getClassData(clazz);
+            var methodToMillis = XposedHelpers.findMethodBestMatch(TimeUnit.MINUTES.getClass(), "toMillis", long.class);
+            var result = dexkit.findMethod(new FindMethod().searchInClass(List.of(clazzData)).matcher(new MethodMatcher().addInvoke(DexSignUtil.getMethodDescriptor(methodToMillis))));
+            if (result.isEmpty())
+                throw new RuntimeException("OnUpdateStatusChanged method not found");
+            return result.get(0).getMethodInstance(loader);
+        });
+    }
+
+    public static Field loadGetInvokeField(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getField(loader, () -> {
+            var method = loadOnUpdateStatusChanged(loader);
+            var methodData = dexkit.getMethodData(DexSignUtil.getMethodDescriptor(method));
+            var fields = methodData.getUsingFields();
+            var field = fields.stream().map(UsingFieldData::getField).filter(f -> f.getDeclaredClass().equals(methodData.getDeclaredClass())).findFirst().orElse(null);
+            if (field == null) throw new RuntimeException("GetInvokeField method not found");
+            return field.getFieldInstance(loader);
+        });
+    }
+
+    public static Class<?> loadStatusInfoClass(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getClass(loader, () -> {
+            var clazz = findFirstClassUsingStrings(loader, StringMatchType.Contains, "ContactStatusDataItem");
+            if (clazz == null) throw new RuntimeException("StatusInfo class not found");
+            return clazz;
+        });
+    }
+
+    public static Class loadStatusListUpdatesClass(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getClass(loader, () -> {
+            var clazz = findFirstClassUsingStrings(loader, StringMatchType.Contains, "StatusListUpdates");
+            if (clazz == null) throw new RuntimeException("StatusListUpdates class not found");
+            return clazz;
+        });
+    }
 }

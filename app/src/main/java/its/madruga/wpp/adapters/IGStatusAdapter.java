@@ -1,25 +1,16 @@
 package its.madruga.wpp.adapters;
 
-import static its.madruga.wpp.xposed.plugins.personalization.XStatusHome.itens;
+import static its.madruga.wpp.xposed.plugins.personalization.XIGStatus.itens;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.BlendMode;
-import android.graphics.BlendModeColorFilter;
-import android.graphics.Canvas;
+import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Outline;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewOutlineProvider;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -30,16 +21,67 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import its.madruga.wpp.views.RoundedImageView;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Objects;
+
+import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 import its.madruga.wpp.xposed.plugins.core.DesignUtils;
-import its.madruga.wpp.xposed.plugins.core.ResId;
 import its.madruga.wpp.xposed.plugins.core.Utils;
+import its.madruga.wpp.xposed.plugins.core.WppCore;
 
 public class IGStatusAdapter extends ArrayAdapter {
 
 
-    public IGStatusAdapter(@NonNull Context context, int resource) {
-        super(context, resource);
+    private final Class<?> clazzImageStatus;
+    private final Class<?> statusInfoClazz;
+    private final Method setCountStatus;
+
+    class IGStatusViewHolder {
+        public ImageView igStatusContactPhoto;
+        public RelativeLayout addButton;
+        public TextView igStatusContactName;
+        public boolean myStatus;
+        private String jid;
+
+        public void setInfo(Object item) {
+            if (Objects.equals(item, "my_status")) {
+                myStatus = true;
+                igStatusContactName.setText(WppCore.getMyName());
+                igStatusContactPhoto.setImageDrawable(WppCore.getMyPhoto());
+                setCountStatus(0, 0);
+                return;
+            }
+            var statusInfo = XposedHelpers.getObjectField(item, "A01");
+            var userJid = XposedHelpers.getObjectField(statusInfo, "A0A");
+            var contactName = WppCore.getContactName(userJid);
+            var rawJid = WppCore.getRawString(userJid);
+            jid = rawJid;
+            igStatusContactName.setText(contactName);
+            igStatusContactPhoto.setImageDrawable(WppCore.getContactPhoto(rawJid));
+            var countUnseen = XposedHelpers.getIntField(statusInfo, "A01");
+            var total = XposedHelpers.getIntField(statusInfo, "A00");
+            setCountStatus(countUnseen, total);
+        }
+
+        public void setCountStatus(int countUnseen, int total) {
+            if (setCountStatus != null) {
+                try {
+                    setCountStatus.invoke(igStatusContactPhoto, countUnseen, total);
+                } catch (Exception e) {
+                    XposedBridge.log(e);
+                }
+            }
+        }
+
+    }
+
+    public IGStatusAdapter(@NonNull Context context, @NonNull Class<?> statusInfoClazz) {
+        super(context, 0);
+        this.clazzImageStatus = XposedHelpers.findClass("com.whatsapp.status.ContactStatusThumbnail", this.getContext().getClassLoader());
+        this.statusInfoClazz = statusInfoClazz;
+        this.setCountStatus = Arrays.stream(this.clazzImageStatus.getDeclaredMethods()).filter(m -> m.getParameterCount() == 2 && m.getParameterTypes()[0].equals(int.class) && m.getParameterTypes()[1].equals(int.class)).findFirst().orElse(null);
     }
 
     @Override
@@ -50,85 +92,106 @@ public class IGStatusAdapter extends ArrayAdapter {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        View result = null;
+        var item = itens.get(position);
+        IGStatusViewHolder holder;
         if (convertView == null) {
-
-            RelativeLayout relativeLayout = new RelativeLayout(this.getContext());
-            RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(Utils.dipToPixels(86), ViewGroup.LayoutParams.WRAP_CONTENT);
-            relativeLayout.setLayoutParams(relativeParams);
-
-            // Criando o FrameLayout
-            FrameLayout frameLayout = new FrameLayout(this.getContext());
-            frameLayout.setId(ResId.id.contact_selector);
-            frameLayout.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-            // Criando o LinearLayout
-            LinearLayout linearLayout = new LinearLayout(this.getContext());
-            LinearLayout.LayoutParams linearParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            linearLayout.setOrientation(LinearLayout.VERTICAL);
-            linearLayout.setLayoutParams(linearParams);
-
-            // Criando o RelativeLayout interno
-            RelativeLayout internalRelativeLayout = new RelativeLayout(this.getContext());
-            RelativeLayout.LayoutParams internalRelativeParams = new RelativeLayout.LayoutParams(Utils.dipToPixels(64), Utils.dipToPixels(64));
-            internalRelativeLayout.setLayoutParams(internalRelativeParams);
-
-            // Adicionando os elementos ao RelativeLayout interno
-            ImageView contactPhoto = new RoundedImageView(this.getContext());
-            contactPhoto.setId(ResId.id.contact_photo);
-            RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            contactPhoto.setLayoutParams(photoParams);
-            contactPhoto.setPadding(Utils.dipToPixels(2.5F), Utils.dipToPixels(2.5F), Utils.dipToPixels(2.5F), Utils.dipToPixels(2.5F));
-            contactPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            contactPhoto.setImageDrawable(DesignUtils.getDrawableByName("avatar_contact"));
-
-//            contactPhoto.setTag("attr08a7", Utils.dipToPixels(2.5F));
-//            contactPhoto.setTag("cstErrorColor", ContextCompat.getColor(context, R.color.status_error));
-//            contactPhoto.setTag("cstSeenColor", ContextCompat.getColor(context, R.color.status_seen));
-//            contactPhoto.setTag("cstUnseenColor", ContextCompat.getColor(context, R.color.status_unseen));
-//            contactPhoto.setTag("tbtnForegroundOnly", false);
-//            contactPhoto.setTag("tbtnRadius", dpToPx(80));
-
-            RelativeLayout addBtnRelativeLayout = new RelativeLayout(this.getContext());
-            addBtnRelativeLayout.setBackgroundColor(Color.TRANSPARENT);
-            addBtnRelativeLayout.setId(ResId.id.add_button);
-            RelativeLayout.LayoutParams addBtnParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            addBtnParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-            addBtnParams.addRule(RelativeLayout.ALIGN_PARENT_END);
-            addBtnParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            addBtnRelativeLayout.setLayoutParams(addBtnParams);
-
-            ImageView iconImageView = new ImageView(this.getContext());
-            iconImageView.setId(ResId.id.icon);
-            RelativeLayout.LayoutParams iconParams = new RelativeLayout.LayoutParams(Utils.dipToPixels(24), Utils.dipToPixels(24));
-            iconImageView.setLayoutParams(iconParams);
-            var icon = DesignUtils.getDrawableByName("ic_add_to_status_wds");
-            icon.setColorFilter(new BlendModeColorFilter(Color.GREEN, BlendMode.SRC_ATOP));
-            iconImageView.setImageDrawable(icon);
-            iconImageView.setBackgroundColor(Color.TRANSPARENT);
-
-            addBtnRelativeLayout.addView(iconImageView);
-            internalRelativeLayout.addView(contactPhoto);
-            internalRelativeLayout.addView(addBtnRelativeLayout);
-
-            TextView contactName = new TextView(this.getContext());
-            contactName.setEllipsize(TextUtils.TruncateAt.END);
-            contactName.setGravity(Gravity.CENTER);
-            contactName.setId(ResId.id.contact_name);
-            LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            contactName.setLayoutParams(nameParams);
-            contactName.setText("Name");
-            contactName.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            contactName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
-            contactName.setTypeface(Typeface.DEFAULT_BOLD);
-            contactName.setMaxLines(1);
-
-            linearLayout.addView(internalRelativeLayout);
-            linearLayout.addView(contactName);
-            frameLayout.addView(linearLayout);
-            relativeLayout.addView(frameLayout);
-            convertView = relativeLayout;
+            holder = new IGStatusViewHolder();
+            convertView = createLayoutStatus(holder);
+            convertView.setTag(holder);
+        } else {
+            holder = (IGStatusViewHolder) convertView.getTag();
         }
+        if (item == null) {
+            holder.setInfo("my_status");
+        } else if (statusInfoClazz.isInstance(item)) {
+            holder.setInfo(item);
+        }
+
+        convertView.setOnClickListener(v -> {
+            if (holder.myStatus) {
+                var intent = new Intent(WppCore.getMainActivity(), XposedHelpers.findClass("com.whatsapp.status.playback.MyStatusesActivity", getContext().getClassLoader()));
+                WppCore.getMainActivity().startActivity(intent);
+                return;
+            }
+            var intent = new Intent(WppCore.getMainActivity(), XposedHelpers.findClass("com.whatsapp.status.playback.StatusPlaybackActivity", getContext().getClassLoader()));
+            intent.putExtra("jid", holder.jid);
+            WppCore.getMainActivity().startActivity(intent);
+        });
+
         return convertView;
+    }
+
+    @NonNull
+    private RelativeLayout createLayoutStatus(IGStatusViewHolder holder) {
+        RelativeLayout relativeLayout = new RelativeLayout(this.getContext());
+        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(Utils.dipToPixels(86), ViewGroup.LayoutParams.WRAP_CONTENT);
+        relativeLayout.setLayoutParams(relativeParams);
+
+        // Criando o FrameLayout
+        FrameLayout frameLayout = new FrameLayout(this.getContext());
+        frameLayout.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        // Criando o LinearLayout
+        LinearLayout linearLayout = new LinearLayout(this.getContext());
+        LinearLayout.LayoutParams linearParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.setLayoutParams(linearParams);
+
+        // Criando o RelativeLayout interno
+        RelativeLayout internalRelativeLayout = new RelativeLayout(this.getContext());
+        RelativeLayout.LayoutParams internalRelativeParams = new RelativeLayout.LayoutParams(Utils.dipToPixels(64), Utils.dipToPixels(64));
+        internalRelativeLayout.setLayoutParams(internalRelativeParams);
+
+        // Adicionando os elementos ao RelativeLayout interno
+        var contactPhoto = (ImageView) XposedHelpers.newInstance(this.clazzImageStatus, this.getContext());
+        RelativeLayout.LayoutParams photoParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        contactPhoto.setLayoutParams(photoParams);
+        contactPhoto.setPadding(Utils.dipToPixels(2.5F), Utils.dipToPixels(2.5F), Utils.dipToPixels(2.5F), Utils.dipToPixels(2.5F));
+        contactPhoto.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        contactPhoto.setImageDrawable(DesignUtils.getDrawableByName("avatar_contact"));
+        holder.igStatusContactPhoto = contactPhoto;
+        contactPhoto.setClickable(true);
+        XposedHelpers.callMethod(contactPhoto, "setBorderSize", (float) Utils.dipToPixels(2.5f));
+        XposedHelpers.callMethod(contactPhoto, "setCornerRadius", (float) Utils.dipToPixels(80f));
+        XposedHelpers.setObjectField(contactPhoto, "A02", Color.GRAY);
+        XposedHelpers.setObjectField(contactPhoto, "A03", DesignUtils.getUnSeenColor());
+
+        RelativeLayout addBtnRelativeLayout = new RelativeLayout(this.getContext());
+        addBtnRelativeLayout.setBackgroundColor(Color.TRANSPARENT);
+        RelativeLayout.LayoutParams addBtnParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        addBtnParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        addBtnParams.addRule(RelativeLayout.ALIGN_PARENT_END);
+        addBtnParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        addBtnRelativeLayout.setLayoutParams(addBtnParams);
+        addBtnRelativeLayout.setVisibility(View.GONE);
+        holder.addButton = addBtnRelativeLayout;
+
+        ImageView iconImageView = new ImageView(this.getContext());
+        RelativeLayout.LayoutParams iconParams = new RelativeLayout.LayoutParams(Utils.dipToPixels(24), Utils.dipToPixels(24));
+        iconImageView.setLayoutParams(iconParams);
+        var icon = DesignUtils.getDrawableByName("my_status_add_button_new");
+        iconImageView.setImageDrawable(icon);
+        iconImageView.setBackgroundColor(Color.TRANSPARENT);
+
+        addBtnRelativeLayout.addView(iconImageView);
+        internalRelativeLayout.addView(contactPhoto);
+        internalRelativeLayout.addView(addBtnRelativeLayout);
+
+        TextView contactName = new TextView(this.getContext());
+        contactName.setEllipsize(TextUtils.TruncateAt.END);
+        contactName.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        contactName.setLayoutParams(nameParams);
+        contactName.setText("Name");
+        contactName.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        contactName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        contactName.setTypeface(Typeface.DEFAULT_BOLD);
+        contactName.setMaxLines(1);
+        holder.igStatusContactName = contactName;
+        linearLayout.addView(internalRelativeLayout);
+        linearLayout.addView(contactName);
+        frameLayout.addView(linearLayout);
+        relativeLayout.addView(frameLayout);
+        return relativeLayout;
     }
 }
