@@ -39,6 +39,8 @@ public class XIGStatus extends XHookBase {
     @Override
     public void doHook() throws Throwable {
 
+        if (!prefs.getBoolean("igstatus", false))return;
+
         var clazz = XposedHelpers.findClass("com.whatsapp.HomeActivity", loader).getSuperclass();
         XposedHelpers.findAndHookMethod(clazz, "onCreate", android.os.Bundle.class, new XC_MethodHook() {
             @Override
