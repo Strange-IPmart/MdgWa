@@ -1242,7 +1242,7 @@ public class Unobfuscator {
     public static Method loadOnTabItemSelectMethod(ClassLoader loader) throws Exception {
         return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
             var clazz = loadEnableCountTabMethod(loader).getDeclaringClass();
-            var method = Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(MenuItem.class)).findFirst().orElse(null);
+            var method = Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.getParameterCount() > 1 && m.getParameterTypes()[0].equals(MenuItem.class)).findFirst().orElse(null);
             if (method == null) throw new RuntimeException("OnTabItemSelect method not found");
             return method;
         });
