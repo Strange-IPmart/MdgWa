@@ -1,5 +1,12 @@
 package its.madruga.wpp.xposed.plugins.core;
 
+import static its.madruga.wpp.xposed.plugins.functions.XAntiRevoke.stripJID;
+
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -56,9 +63,9 @@ public class WppCore {
         return null;
     }
 
-    public static String getContactName(String rawJid) {
+    public static String getContactName(Object userJid) {
         try {
-            var contact = getContactMethod.invoke(getContactManager(), createUserJid(rawJid));
+            var contact = getContactMethod.invoke(getContactManager(), userJid);
             var stringField = Arrays.stream(contact.getClass().getDeclaredFields()).filter(f -> f.getType().equals(String.class)).toArray(Field[]::new);
             return (String) stringField[3].get(contact);
         } catch (Exception e) {
@@ -77,5 +84,41 @@ public class WppCore {
         return null;
     }
 
+    public static String getRawString(Object userjid) {
+        if (userjid == null) return null;
+        return (String) XposedHelpers.callMethod(userjid, "getRawString");
+    }
 
+    public static Drawable getContactPhoto(String jid) {
+        String datafolder = Utils.getApplication().getCacheDir().getParent() + "/";
+        File file = new File(datafolder + "files" + "/" + "Avatars" + "/" + jid + ".j");
+
+        if (!file.exists())
+            file = new File(datafolder + "/cache/" + "Profile Pictures" + "/" + stripJID(jid) + ".jpg");
+
+        if (file.exists()) return Drawable.createFromPath(file.getAbsolutePath());
+
+        return null;
+    }
+
+    public static String getMyName() {
+        var startup_prefs = ((Context)mainActivity).getSharedPreferences("startup_prefs", Context.MODE_PRIVATE);
+        return startup_prefs.getString("push_name", "WhatsApp");
+    }
+
+    public static Drawable getMyPhoto() {
+        String datafolder = Utils.getApplication().getCacheDir().getParent() + "/";
+        File file = new File(datafolder + "files" + "/" + "me.jpg");
+        if (file.exists()) return Drawable.createFromPath(file.getAbsolutePath());
+        return null;
+    }
+
+    public static Activity getMainActivity() {
+        return ((Activity)mainActivity);
+    }
+
+    public static String getMyNumber() {
+        var mainPrefs = Utils.getApplication().getSharedPreferences(Utils.getApplication().getPackageName() + "_preferences_light", Context.MODE_PRIVATE);
+        return mainPrefs.getString("registration_jid", "");
+    }
 }
