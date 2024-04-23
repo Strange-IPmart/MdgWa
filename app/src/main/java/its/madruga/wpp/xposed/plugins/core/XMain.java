@@ -1,13 +1,10 @@
 package its.madruga.wpp.xposed.plugins.core;
 
-import static its.madruga.wpp.BuildConfig.DEBUG;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -44,6 +41,7 @@ import its.madruga.wpp.xposed.plugins.functions.XPinnedLimit;
 import its.madruga.wpp.xposed.plugins.functions.XShareLimit;
 import its.madruga.wpp.xposed.plugins.functions.XStatusDownload;
 import its.madruga.wpp.xposed.plugins.functions.XViewOnce;
+import its.madruga.wpp.xposed.plugins.personalization.XIGStatus;
 import its.madruga.wpp.xposed.plugins.personalization.XBioAndName;
 import its.madruga.wpp.xposed.plugins.personalization.XBubbleColors;
 import its.madruga.wpp.xposed.plugins.personalization.XChangeColors;
@@ -71,16 +69,19 @@ public class XMain {
             @SuppressWarnings("deprecation")
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 mApp = (Application) param.args[0];
+
+                DesignUtils.mPrefs = pref;
                 new UnobfuscatorCache(mApp,pref);
                 XDatabases.Initialize(loader, pref);
+                WppCore.Initialize(loader);
+
                 PackageManager packageManager = mApp.getPackageManager();
                 pref.registerOnSharedPreferenceChangeListener((sharedPreferences, s) -> pref.reload());
                 PackageInfo packageInfo = packageManager.getPackageInfo(mApp.getPackageName(), 0);
                 XposedBridge.log(packageInfo.versionName);
                 plugins(loader, pref);
                 registerReceivers();
-                if (DEBUG)
-                    XposedHelpers.setStaticIntField(XposedHelpers.findClass("com.whatsapp.util.Log", loader), "level", 5);
+//                    XposedHelpers.setStaticIntField(XposedHelpers.findClass("com.whatsapp.util.Log", loader), "level", 5);
             }
         });
 
@@ -130,6 +131,7 @@ public class XMain {
                 XHideReceipt.class,
                 XHideTag.class,
                 XHideView.class,
+                XIGStatus.class,
                 XMediaQuality.class,
                 XNewChat.class,
                 XOthers.class,

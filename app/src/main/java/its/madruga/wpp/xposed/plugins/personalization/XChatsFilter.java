@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.BaseAdapter;
 
 import androidx.annotation.NonNull;
@@ -27,6 +28,8 @@ import its.madruga.wpp.core.databases.MessageStore;
 import its.madruga.wpp.xposed.Unobfuscator;
 import its.madruga.wpp.xposed.UnobfuscatorCache;
 import its.madruga.wpp.xposed.models.XHookBase;
+import its.madruga.wpp.xposed.plugins.core.Utils;
+import its.madruga.wpp.xposed.plugins.core.WppCore;
 import its.madruga.wpp.xposed.plugins.core.XMain;
 
 public class XChatsFilter extends XHookBase {
@@ -250,7 +253,6 @@ public class XChatsFilter extends XHookBase {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 var chatsList = (List) param.getResult();
-                logDebug("GetChatsList: " + chatsList.size());
                 var resultList = filterChat(param.thisObject, chatsList);
                 param.setResult(resultList);
             }
@@ -289,11 +291,8 @@ public class XChatsFilter extends XHookBase {
     }
 
     private List filterChat(Object thiz, List chatsList) {
-        logDebug("GetChatsListObject: " + thiz);
         var tabChat = tabInstances.get(CHATS);
         var tabGroup = tabInstances.get(GROUPS);
-        logDebug("Chats: " + tabChat);
-        logDebug("Groups: " + tabGroup);
         if (!Objects.equals(tabChat, thiz) && !Objects.equals(tabGroup, thiz)) {
             return chatsList;
         }
@@ -307,28 +306,59 @@ public class XChatsFilter extends XHookBase {
         logDebug(Unobfuscator.getMethodDescriptor(onCreateTabList));
         var fieldTabsList = Arrays.stream(home.getDeclaredFields()).filter(f -> f.getType().equals(List.class)).findFirst().orElse(null);
         fieldTabsList.setAccessible(true);
+
         XposedBridge.hookMethod(onCreateTabList, new XC_MethodHook() {
             @Override
             @SuppressWarnings("unchecked")
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 tabs = (ArrayList<Integer>) fieldTabsList.get(null);
-                var hidetabs = prefs.getString("hidetabs", null);
-                logDebug("hidetabs: " + hidetabs);
-                if (!tabs.contains(GROUPS) && prefs.getBoolean("separategroups", false)) {
+                if (tabs == null) return;
+                if (!prefs.getBoolean("separategroups", false)) return;
+                if (!tabs.contains(GROUPS)) {
                     tabs.add(tabs.isEmpty() ? 0 : 1, GROUPS);
                 }
-                if (hidetabs != null) {
-                    for (var tab : hidetabs.split(",")) {
-                        if(tab.equals("")) return;
-                        tabs.remove(Integer.valueOf(tab));
-                    }
-                }
+            }
+        });
 
+        var hidetabs = prefs.getString("hidetabs", null);
+        if (hidetabs == null || hidetabs.isEmpty()) return;
+        var hideTabsList = Arrays.asList(hidetabs.split(","));
+
+        var OnTabItemAddMethod = Unobfuscator.loadOnTabItemAddMethod(loader);
+        XposedBridge.hookMethod(OnTabItemAddMethod, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                var menu = (MenuItem) param.thisObject;
+                var menuItemId = menu.getItemId();
+                if (hideTabsList.contains(String.valueOf(menuItemId))) {
+                    param.setResult(false);
+                }
+            }
+        });
+
+        var onMenuItemSelected = Unobfuscator.loadOnMenuItemSelected(loader);
+        XposedBridge.hookMethod(onMenuItemSelected, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                var index = (int) param.args[0];
+                param.args[0] = getNewTabIndex(hideTabsList, index);
             }
         });
     }
 
-    public class ArrayListFilter extends ArrayList {
+    public int getNewTabIndex(List hidetabs, int index) {
+        var tabIsHidden = hidetabs.contains(String.valueOf(tabs.get(index)));
+        if (!tabIsHidden) return index;
+        var idAtual = XposedHelpers.getIntField(WppCore.getMainActivity(), "A03");
+        var indexAtual = tabs.indexOf(idAtual);
+        var newIndex = index > indexAtual ? index + 1 : index - 1;
+        if (newIndex < 0) return 0;
+        if (newIndex >= tabs.size()) return indexAtual;
+        return getNewTabIndex(hidetabs, newIndex);
+    }
+
+
+    public static class ArrayListFilter extends ArrayList {
 
         private final boolean isGroup;
 

@@ -155,4 +155,6 @@
     <string name="calls">"Chiamate "</string>
     <string name="updates">Aggiornamenti</string>
     <string name="about">About</string>
+    <string name="igstatus_on_home_screen">Enable IGStatus on Home Screen</string>
+    <string name="igstatus_on_home_screen_sum">Show status style Instagram in Home Screen</string>
 </resources>

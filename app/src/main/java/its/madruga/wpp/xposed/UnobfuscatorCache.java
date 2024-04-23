@@ -24,7 +24,7 @@ public class UnobfuscatorCache {
 
     private final Application mApp;
     private static UnobfuscatorCache mInstance;
-    private SharedPreferences mShared;
+    private final SharedPreferences mShared;
 
     private final Map<String, String> reverseResourceMap = new HashMap<>();
 

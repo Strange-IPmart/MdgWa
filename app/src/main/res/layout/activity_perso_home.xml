@@ -116,6 +116,15 @@
                     other:reboot="true"
                     android:text="@string/hide_tabs_on_home" />
 
+                <its.madruga.wpp.views.SwitchButton
+                    android:id="@+id/igstatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:summary="@string/igstatus_on_home_screen_sum"
+                    android:tag="igstatus"
+                    other:reboot="true"
+                    android:text="@string/igstatus_on_home_screen" />
+
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
