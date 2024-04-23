@@ -7,9 +7,11 @@ import static de.robv.android.xposed.XposedHelpers.setObjectField;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
@@ -54,13 +56,14 @@ public class XChatsFilter extends XHookBase {
         // Modifying tab list order
         hookTabList(home);
 
+        // Setting group icon
+        hookTabIcon();
+
         if (!prefs.getBoolean("separategroups", false)) return;
         // Setting up fragments
         hookTabInstance(cFrag);
         // Setting group tab name
         hookTabName(home);
-        // Setting group icon
-        hookTabIcon();
         // Setting tab count
         hookTabCount();
     }
@@ -156,6 +159,11 @@ public class XChatsFilter extends XHookBase {
         var iconFrameField = Unobfuscator.loadIconTabLayoutField(loader);
         var iconMenuField = Unobfuscator.loadIconMenuField(loader);
 
+        var hidetabs = prefs.getString("hidetabs", null);
+        if (hidetabs == null || hidetabs.isEmpty()) return;
+        var hideTabsList = Arrays.asList(hidetabs.split(","));
+
+
         XposedBridge.hookMethod(iconTabMethod, new XC_MethodHook() {
             @SuppressLint("ResourceType")
             @Override
@@ -164,14 +172,16 @@ public class XChatsFilter extends XHookBase {
                 if (superClass != null && superClass == iconTabMethod.getDeclaringClass()) {
                     var field1 = superClass.getDeclaredField(iconField.getName()).get(param.thisObject);
                     var field2 = getObjectField(field1, iconFrameField.getName());
-                    var menu = getObjectField(field2, iconMenuField.getName());
-                    if (menu != null) {
-                        var menuItem = (MenuItem) callMethod(menu, "findItem", GROUPS);
-                        if (menuItem != null) {
-                            var id = XMain.mApp.getResources().getIdentifier("home_tab_communities_selector", "drawable", XMain.mApp.getPackageName());
-                            menuItem.setIcon(id);
-                        }
+                    var menu = (Menu) getObjectField(field2, iconMenuField.getName());
+                    if (menu == null) return;
+                    // add Icon to menu
+                    var menuItem = (MenuItem) menu.findItem(GROUPS);
+                    if (menuItem != null) {
+                        var id = XMain.mApp.getResources().getIdentifier("home_tab_communities_selector", "drawable", XMain.mApp.getPackageName());
+                        menuItem.setIcon(id);
                     }
+                    // Hide tab
+
                 }
             }
         });
@@ -307,6 +317,12 @@ public class XChatsFilter extends XHookBase {
         var fieldTabsList = Arrays.stream(home.getDeclaredFields()).filter(f -> f.getType().equals(List.class)).findFirst().orElse(null);
         fieldTabsList.setAccessible(true);
 
+
+        var hidetabs = prefs.getString("hidetabs", null);
+        if (hidetabs == null || hidetabs.isEmpty()) return;
+        var hideTabsList = Arrays.asList(hidetabs.split(","));
+
+
         XposedBridge.hookMethod(onCreateTabList, new XC_MethodHook() {
             @Override
             @SuppressWarnings("unchecked")
@@ -320,10 +336,6 @@ public class XChatsFilter extends XHookBase {
             }
         });
 
-        var hidetabs = prefs.getString("hidetabs", null);
-        if (hidetabs == null || hidetabs.isEmpty()) return;
-        var hideTabsList = Arrays.asList(hidetabs.split(","));
-
         var OnTabItemAddMethod = Unobfuscator.loadOnTabItemAddMethod(loader);
         XposedBridge.hookMethod(OnTabItemAddMethod, new XC_MethodHook() {
             @Override
@@ -332,6 +344,18 @@ public class XChatsFilter extends XHookBase {
                 var menuItemId = menu.getItemId();
                 if (hideTabsList.contains(String.valueOf(menuItemId))) {
                     param.setResult(false);
+                }
+            }
+        });
+
+        var OnTabItemSelectedMethod = Unobfuscator.loadOnTabItemSelectMethod(loader);
+        logDebug(Unobfuscator.getMethodDescriptor(OnTabItemSelectedMethod));
+        XposedBridge.hookMethod(OnTabItemSelectedMethod, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                var menu = (MenuItem) param.args[0];
+                if (hideTabsList.contains(String.valueOf(menu.getItemId()))) {
+                    menu.setVisible(false);
                 }
             }
         });
