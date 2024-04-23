@@ -41,8 +41,9 @@ public class XIGStatus extends XHookBase {
 
         if (!prefs.getBoolean("igstatus", false)) return;
 
-        var clazz = XposedHelpers.findClass("com.whatsapp.HomeActivity", loader).getSuperclass();
-        XposedHelpers.findAndHookMethod(clazz, "onCreate", android.os.Bundle.class, new XC_MethodHook() {
+        var clazz = XposedHelpers.findClass("com.whatsapp.HomeActivity", loader);
+
+        XposedHelpers.findAndHookMethod(clazz.getSuperclass(), "onCreate", android.os.Bundle.class, new XC_MethodHook() {
             @Override
             @SuppressLint("DiscouragedApi")
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -63,13 +64,13 @@ public class XIGStatus extends XHookBase {
         });
 
         // fix scroll
-
         var onScrollPagerMethod = Unobfuscator.loadScrollPagerMethod(loader);
+
         XposedBridge.hookMethod(onScrollPagerMethod, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 var scroll = -(float) XposedHelpers.getIntField(WppCore.getMainActivity(), "A02");
-                if (mStatusContainer.getTranslationY() != scroll && mStatusContainer.isShown())
+                if (mStatusContainer.isShown())
                     mStatusContainer.setTranslationY(scroll);
             }
         });
@@ -101,6 +102,7 @@ public class XIGStatus extends XHookBase {
         XposedBridge.hookMethod(onMenuItemSelected, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.status.playback.StatusPlaybackActivity", loader))) return;
                 var index = (int) param.args[0];
                 WppCore.getMainActivity().runOnUiThread(() -> {
                     XposedHelpers.setObjectField(WppCore.getMainActivity(), "A02", 0);

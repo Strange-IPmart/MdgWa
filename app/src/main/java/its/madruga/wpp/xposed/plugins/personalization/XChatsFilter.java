@@ -364,6 +364,7 @@ public class XChatsFilter extends XHookBase {
         XposedBridge.hookMethod(onMenuItemSelected, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.status.playback.StatusPlaybackActivity", loader))) return;
                 var index = (int) param.args[0];
                 param.args[0] = getNewTabIndex(hideTabsList, index);
             }
