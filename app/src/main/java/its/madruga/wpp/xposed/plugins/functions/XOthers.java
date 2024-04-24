@@ -55,16 +55,17 @@ public class XOthers extends XHookBase {
         var novoTema = prefs.getBoolean("novotema", false);
         var menuWIcons = prefs.getBoolean("menuwicon", false);
         var newSettings = prefs.getBoolean("novaconfig", false);
-        var filterChats = prefs.getBoolean("barfilter", false);
+        var filterChats = prefs.getInt("chatfilter", 0);
         var strokeButtons = prefs.getBoolean("strokebuttons", false);
         var outlinedIcons = prefs.getBoolean("outlinedicons", false);
         var showDnd = prefs.getBoolean("show_dndmode", false);
+        var separateGroups = prefs.getBoolean("separategroups", false);
 
-        props.put(5171, true); // lupa de pesquisa
+        props.put(5171, !separateGroups); // filtros de chat e grupos
         props.put(4524, novoTema);
         props.put(4497, menuWIcons);
         props.put(4023, newSettings);
-        props.put(8013, filterChats); // lupa sera removida e sera adicionado uma barra no lugar.
+        props.put(8013, filterChats == 2); // lupa sera removida e sera adicionado uma barra no lugar.
         props.put(5834, strokeButtons);
         props.put(5509, outlinedIcons);
         props.put(2358, false);
@@ -113,6 +114,18 @@ public class XOthers extends XHookBase {
                 }
             }
         });
+
+        XposedHelpers.findAndHookMethod("com.whatsapp.HomeActivity", loader, "onPrepareOptionsMenu", Menu.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                var menu = (Menu) param.args[0];
+                var item = menu.findItem(Utils.getID("menuitem_search", "id"));
+                if (item != null) {
+                    item.setVisible(filterChats == 1);
+                }
+            }
+        });
+
     }
 
     private static void restartApp(Activity home) {
