@@ -1,7 +1,6 @@
 package its.madruga.wpp.xposed.plugins.functions;
 
 
-import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
@@ -18,7 +17,6 @@ import androidx.collection.ArraySet;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -38,8 +36,6 @@ public class XBlueTick extends XHookBase {
     private static final ArraySet<String> messages = new ArraySet<>();
     private static Object mWaJobManager;
     private static Field fieldMessageKey;
-    private static Class<?> mGenJidClass;
-    private static Method mGenJidMethod;
     private static Class<?> mSendReadClass;
     private static Method WaJobManagerMethod;
     private static String currentJid;
@@ -67,9 +63,6 @@ public class XBlueTick extends XHookBase {
         var messageJobMethod = Unobfuscator.loadBlueOnReplayMessageJobMethod(loader);
 
         mSendReadClass = XposedHelpers.findClass("com.whatsapp.jobqueue.job.SendReadReceiptJob", loader);
-        var subClass = Arrays.stream(mSendReadClass.getConstructors()).filter(c -> c.getParameterTypes().length == 8).findFirst().orElse(null).getParameterTypes()[0];
-        mGenJidClass = Arrays.stream(subClass.getFields()).filter(field -> Modifier.isStatic(field.getModifiers())).findFirst().orElse(null).getType();
-        mGenJidMethod = Arrays.stream(mGenJidClass.getMethods()).filter(m -> m.getParameterCount() == 1 && !Modifier.isStatic(m.getModifiers())).findFirst().orElse(null);
 
 
         WppCore.addListenerChat((conv,type)->{
@@ -185,9 +178,8 @@ public class XBlueTick extends XHookBase {
         try {
             logDebug("Blue on Reply: " + currentJid);
             var arr_s = messages.toArray(new String[0]);
-            var genInstance = XposedHelpers.newInstance(mGenJidClass);
-            var gen = XposedHelpers.callMethod(genInstance, mGenJidMethod.getName(), currentJid);
-            var sendJob = XposedHelpers.newInstance(mSendReadClass, gen, null, null, null, arr_s, -1, 0L, false);
+            var userJid = WppCore.createUserJid(currentJid);
+            var sendJob = XposedHelpers.newInstance(mSendReadClass, userJid, null, null, null, arr_s, -1, 0L, false);
             WaJobManagerMethod.invoke(mWaJobManager, sendJob);
             messages.clear();
         } catch (Throwable e) {
@@ -201,10 +193,9 @@ public class XBlueTick extends XHookBase {
         try {
             logDebug("sendBlue: " + currentJid);
             var arr_s = messages.toArray(new String[0]);
-            var genInstance = XposedHelpers.newInstance(mGenJidClass);
-            var gen = XposedHelpers.callMethod(genInstance, mGenJidMethod.getName(), "status@broadcast");
-            var gen2 = XposedHelpers.callMethod(genInstance, mGenJidMethod.getName(), currentJid);
-            var sendJob = XposedHelpers.newInstance(mSendReadClass, gen, gen2, null, null, arr_s, -1, 0L, false);
+            var userJidSender = WppCore.createUserJid("status@broadcast");
+            var userJid = WppCore.createUserJid(currentJid);
+            var sendJob = XposedHelpers.newInstance(mSendReadClass, userJidSender,userJid, null, null, arr_s, -1, 0L, false);
             WaJobManagerMethod.invoke(mWaJobManager, sendJob);
             messages.clear();
         } catch (Throwable e) {

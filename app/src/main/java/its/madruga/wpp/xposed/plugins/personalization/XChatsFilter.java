@@ -6,7 +6,6 @@ import static de.robv.android.xposed.XposedHelpers.setObjectField;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.database.sqlite.SQLiteDatabase;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,7 +29,6 @@ import its.madruga.wpp.core.databases.MessageStore;
 import its.madruga.wpp.xposed.Unobfuscator;
 import its.madruga.wpp.xposed.UnobfuscatorCache;
 import its.madruga.wpp.xposed.models.XHookBase;
-import its.madruga.wpp.xposed.plugins.core.Utils;
 import its.madruga.wpp.xposed.plugins.core.WppCore;
 import its.madruga.wpp.xposed.plugins.core.XMain;
 
@@ -331,22 +329,23 @@ public class XChatsFilter extends XHookBase {
         XposedBridge.hookMethod(OnTabItemAddMethod, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                var menu = (MenuItem) param.thisObject;
+                var menu = (MenuItem) param.getResult();
                 var menuItemId = menu.getItemId();
                 if (hideTabsList.contains(String.valueOf(menuItemId))) {
-                    param.setResult(false);
+                    menu.setVisible(false);
                 }
             }
         });
 
-        var OnTabItemSelectedMethod = Unobfuscator.loadOnTabItemSelectMethod(loader);
-        logDebug(Unobfuscator.getMethodDescriptor(OnTabItemSelectedMethod));
-        XposedBridge.hookMethod(OnTabItemSelectedMethod, new XC_MethodHook() {
+        var loadTabFrameClass = Unobfuscator.loadTabFrameClass(loader);
+        logDebug(loadTabFrameClass);
+
+        XposedBridge.hookAllMethods(FrameLayout.class, "onMeasure", new XC_MethodHook() {
             @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                var menu = (MenuItem) param.args[0];
-                if (hideTabsList.contains(String.valueOf(menu.getItemId()))) {
-                    menu.setVisible(false);
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if (!loadTabFrameClass.isInstance(param.thisObject)) return;
+                for (var item : hideTabsList) {
+                    ((View)param.thisObject).findViewById(Integer.parseInt(item)).setVisibility(View.GONE);
                 }
             }
         });
@@ -355,7 +354,10 @@ public class XChatsFilter extends XHookBase {
         XposedBridge.hookMethod(onMenuItemSelected, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.status.playback.StatusPlaybackActivity", loader))) return;
+                if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.status.playback.StatusPlaybackActivity", loader)))
+                    return;
+                if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.gallery.GalleryTabHostFragment", loader)))
+                    return;
                 var index = (int) param.args[0];
                 param.args[0] = getNewTabIndex(hideTabsList, index);
             }

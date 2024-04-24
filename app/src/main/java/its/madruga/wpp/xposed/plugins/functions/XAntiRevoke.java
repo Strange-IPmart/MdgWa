@@ -33,6 +33,7 @@ import its.madruga.wpp.core.databases.MessageStore;
 import its.madruga.wpp.xposed.Unobfuscator;
 import its.madruga.wpp.xposed.UnobfuscatorCache;
 import its.madruga.wpp.xposed.models.XHookBase;
+import its.madruga.wpp.xposed.plugins.core.DesignUtils;
 import its.madruga.wpp.xposed.plugins.core.Utils;
 import its.madruga.wpp.xposed.plugins.core.WppCore;
 import its.madruga.wpp.xposed.plugins.core.XMain;
@@ -174,14 +175,14 @@ public class XAntiRevoke extends XHookBase {
     }
 
 
-    @SuppressLint({"DiscouragedApi","UseCompatLoadingForDrawables"})
     private void isMRevoked(Object objMessage, TextView dateTextView, String antirevokeType) {
         if (dateTextView == null) return;
         var fieldMessageDetails = XposedHelpers.getObjectField(objMessage, fieldMessageKey.getName());
         var messageKey = (String) XposedHelpers.getObjectField(fieldMessageDetails, "A01");
         var messageRevokedList = getRevokedMessages(objMessage);
         var id = XposedHelpers.getLongField(objMessage, getFieldIdMessage.getName());
-        if (messageRevokedList.contains(messageKey) || messageRevokedList.contains(MessageStore.getOriginalMessageKey(id))) {
+        String keyOrig;
+        if (messageRevokedList.contains(messageKey) || ((keyOrig = MessageStore.getOriginalMessageKey(id)) != null && messageRevokedList.contains(keyOrig))) {
             var antirevokeValue = prefs.getInt(antirevokeType, 0);
             if (antirevokeValue == 1) {
                 // Text
@@ -189,9 +190,8 @@ public class XAntiRevoke extends XHookBase {
                 dateTextView.setText(newTextData);
             } else if (antirevokeValue == 2) {
                 // Icon
-                var iconId = mApp.getResources().getIdentifier("msg_status_client_revoked", "drawable", mApp.getPackageName());
-                var drawable = mApp.getDrawable(iconId);
-                drawable = scaleImage(mApp.getResources(), drawable, 0.7f);
+                var icon = DesignUtils.getDrawableByName("msg_status_client_revoked");
+                var drawable = scaleImage(mApp.getResources(), icon, 0.7f);
                 drawable.setColorFilter(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_ATOP));
                 dateTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
                 dateTextView.setCompoundDrawablePadding(5);
@@ -212,7 +212,7 @@ public class XAntiRevoke extends XHookBase {
             String key = entry.getKey();
             if (key == null || !key.contains("revoked")) continue;
             var jid = key.replace("_revoked", "");
-            var msg = (String)entry.getValue();
+            var msg = (String) entry.getValue();
             var messages = Utils.StringToStringArray(msg);
             if (messages != null) {
                 for (var message : messages) {

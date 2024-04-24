@@ -103,6 +103,7 @@ public class XIGStatus extends XHookBase {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.status.playback.StatusPlaybackActivity", loader))) return;
+                if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.gallery.GalleryTabHostFragment", loader))) return;
                 var index = (int) param.args[0];
                 WppCore.getMainActivity().runOnUiThread(() -> {
                     XposedHelpers.setObjectField(WppCore.getMainActivity(), "A02", 0);

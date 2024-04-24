@@ -33,7 +33,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -1167,11 +1166,9 @@ public class Unobfuscator {
 
     public static Method loadOnTabItemAddMethod(ClassLoader loader) throws Exception {
         return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
-            var result = findFirstClassUsingStrings(loader, StringMatchType.Contains, "MenuItemCompat.getActionProvider");
-            if (result == null) throw new RuntimeException("OnTabItemAdd Class not found");
-            var method = Arrays.stream(result.getDeclaredMethods()).filter(m -> m.getName().equals("isVisible")).findFirst().orElse(null);
-            if (method == null) throw new RuntimeException("OnTabItemAdd method not found");
-            return method;
+            var result = findFirstMethodUsingStrings(loader, StringMatchType.Contains, "Maximum number of items supported by");
+            if (result == null) throw new RuntimeException("OnTabItemAdd method not found");
+            return result;
         });
     }
 
@@ -1248,12 +1245,11 @@ public class Unobfuscator {
         });
     }
 
-    public static Method loadOnTabItemSelectMethod(ClassLoader loader) throws Exception {
-        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
-            var clazz = loadEnableCountTabMethod(loader).getDeclaringClass();
-            var method = Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.getParameterCount() > 1 && m.getParameterTypes()[0].equals(MenuItem.class)).findFirst().orElse(null);
-            if (method == null) throw new RuntimeException("OnTabItemSelect method not found");
-            return method;
+    public static Class loadTabFrameClass(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getClass(loader, () -> {
+            var clazz = findFirstClassUsingStrings(loader, StringMatchType.Contains, "android:menu:presenters");
+            if (clazz == null) throw new RuntimeException("TabFrame class not found");
+            return clazz;
         });
     }
 
