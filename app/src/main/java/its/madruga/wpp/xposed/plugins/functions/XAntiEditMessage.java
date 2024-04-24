@@ -34,6 +34,7 @@ import its.madruga.wpp.xposed.models.XHookBase;
 import its.madruga.wpp.xposed.plugins.core.DesignUtils;
 import its.madruga.wpp.xposed.plugins.core.ResId;
 import its.madruga.wpp.xposed.plugins.core.Utils;
+import its.madruga.wpp.xposed.plugins.core.WppCore;
 import its.madruga.wpp.xposed.plugins.core.XMain;
 
 public class XAntiEditMessage extends XHookBase {
@@ -72,8 +73,6 @@ public class XAntiEditMessage extends XHookBase {
 
         var editMessageViewField = Unobfuscator.loadEditMessageViewField(loader);
         logDebug(Unobfuscator.getFieldDescriptor(editMessageViewField));
-
-        var dialogViewClass = Unobfuscator.loadDialogViewClass(loader);
 
 
         XposedBridge.hookMethod(onStartMethod, new XC_MethodHook() {
@@ -129,7 +128,7 @@ public class XAntiEditMessage extends XHookBase {
                             } else {
                                 messages.add(0, msg);
                             }
-                            showBottomDialog(dialogViewClass, messages);
+                            showBottomDialog(messages);
                         } catch (Exception exception0) {
                             logDebug(exception0);
                         }
@@ -141,11 +140,11 @@ public class XAntiEditMessage extends XHookBase {
     }
 
     @SuppressLint("SetTextI18n")
-    private void showBottomDialog(Class<?> dialogClass, ArrayList<MessageHistory.MessageItem> messages) {
+    private void showBottomDialog(ArrayList<MessageHistory.MessageItem> messages) {
         ((Activity) mConversation).runOnUiThread(() -> {
             var ctx = (Context) mConversation;
 
-            var dialog = (Dialog) XposedHelpers.newInstance(dialogClass, ctx, 0);
+            var dialog = WppCore.createDialog(ctx);
             // NestedScrollView
             NestedScrollView nestedScrollView0 = new NestedScrollView(ctx, null);
             nestedScrollView0.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));

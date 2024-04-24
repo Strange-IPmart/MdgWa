@@ -18,13 +18,9 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import its.madruga.wpp.xposed.Unobfuscator;
 import its.madruga.wpp.xposed.models.XHookBase;
+import its.madruga.wpp.xposed.plugins.core.WppCore;
 
 public class XCallPrivacy extends XHookBase {
-
-    private static Object mActivity;
-    private Field contactManagerField;
-    private Method getContactMethod;
-
     public XCallPrivacy(@NonNull ClassLoader loader, @NonNull XSharedPreferences preferences) {
         super(loader, preferences);
     }
@@ -62,27 +58,14 @@ public class XCallPrivacy extends XHookBase {
             }
         });
 
-        contactManagerField = Unobfuscator.loadContactManagerField(loader);
-        getContactMethod = Unobfuscator.loadGetContactInfoMethod(loader);
-
-        XposedBridge.hookAllMethods(XposedHelpers.findClass("com.whatsapp.HomeActivity", loader), "onCreate", new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                mActivity = param.thisObject;
-            }
-        });
 
     }
 
     public boolean checkCallBlock(Object callinfo) throws IllegalAccessException, InvocationTargetException {
         var userJid = XposedHelpers.callMethod(callinfo, "getPeerJid");
-        var contactManager = contactManagerField.get(mActivity);
-        var jid = stripJID((String) XposedHelpers.callMethod(userJid, "getRawString"));
-        var contact = getContactMethod.invoke(contactManager, userJid);
-        var stringField = Arrays.stream(contact.getClass().getDeclaredFields()).filter(f -> f.getType().equals(String.class)).toArray(Field[]::new);
-        var saveName = stringField[3].get(contact);
-        logDebug("jid: " + jid + " saveName: " + saveName);
-        return saveName == null || saveName.equals(jid);
+        var jid = WppCore.stripJID(WppCore.getRawString(userJid));
+        var contactName = WppCore.getContactName(userJid);
+        return contactName == null || contactName.equals(jid);
     }
 
 

@@ -37,7 +37,6 @@ public class XPinnedLimit extends XHookBase {
         var pinnedSetMethod = Unobfuscator.loadPinnedHashSetMethod(loader);
 
         var idPin = XMain.mApp.getResources().getIdentifier("menuitem_conversations_pin", "id", XMain.mApp.getPackageName());
-        var idSelectAll = XMain.mApp.getResources().getIdentifier("menuitem_conversations_select_all", "id", XMain.mApp.getPackageName());
 
 
         XposedBridge.hookMethod(pinnedLimitMethod, new XC_MethodHook() {
@@ -48,7 +47,7 @@ public class XPinnedLimit extends XHookBase {
                 if (!prefs.getBoolean("pinnedlimit", false)) return;
                 if (param.args.length > 0 && param.args[0] instanceof MenuItem menuItem) {
                     logDebug("menuItem.getItemId() = " + menuItem.getItemId());
-                    if (menuItem.getItemId() != idPin && menuItem.getItemId() != idSelectAll)
+                    if (menuItem.getItemId() != idPin)
                         return;
                     hooked = XposedHelpers.findAndHookMethod(HashSet.class, "size", XC_MethodReplacement.returnConstant(-57));
                 }

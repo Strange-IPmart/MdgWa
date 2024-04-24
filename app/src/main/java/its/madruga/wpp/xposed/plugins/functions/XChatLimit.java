@@ -27,16 +27,10 @@ public class XChatLimit extends XHookBase {
         XposedBridge.hookMethod(chatLimitDeleteMethod, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                var stacktrace = Thread.currentThread().getStackTrace();
-                for (StackTraceElement stackTraceElement : stacktrace) {
-                    var className = stackTraceElement.getClassName();
-                    var methodName = stackTraceElement.getMethodName();
-                    if (Objects.equals(className, chatLimitDelete2Method.getDeclaringClass().getName()) && Objects.equals(methodName, chatLimitDelete2Method.getName())) {
-                        if (prefs.getBoolean("revokeallmessages", false))
-                            param.setResult(0L);
-                    }
+                if (Unobfuscator.isCalledFromMethod(chatLimitDelete2Method)) {
+                    if (prefs.getBoolean("revokeallmessages", false))
+                        param.setResult(0L);
                 }
-
             }
         });
     }

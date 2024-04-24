@@ -34,13 +34,12 @@ import its.madruga.wpp.xposed.Unobfuscator;
 import its.madruga.wpp.xposed.UnobfuscatorCache;
 import its.madruga.wpp.xposed.models.XHookBase;
 import its.madruga.wpp.xposed.plugins.core.Utils;
+import its.madruga.wpp.xposed.plugins.core.WppCore;
 import its.madruga.wpp.xposed.plugins.core.XMain;
 
 public class XAntiRevoke extends XHookBase {
 
     private static final HashMap<String, HashSet<String>> messageRevokedMap = new HashMap<>();
-    @SuppressLint("StaticFieldLeak")
-    private static Activity mConversation;
     private static SharedPreferences mShared;
     private static Field fieldMessageKey;
     private static Field getFieldIdMessage;
@@ -53,18 +52,6 @@ public class XAntiRevoke extends XHookBase {
     public void doHook() throws Exception {
         mShared = mApp.getSharedPreferences(mApp.getPackageName() + "_mdgwa_preferences", Context.MODE_PRIVATE);
         migrateMessages();
-
-        var onStartMethod = Unobfuscator.loadAntiRevokeOnStartMethod(loader);
-        logDebug(Unobfuscator.getMethodDescriptor(onStartMethod));
-
-        var onResumeMethod = Unobfuscator.loadAntiRevokeOnResumeMethod(loader);
-        logDebug(Unobfuscator.getMethodDescriptor(onResumeMethod));
-
-        var convChatField = Unobfuscator.loadAntiRevokeConvChatField(loader);
-        logDebug(Unobfuscator.getFieldDescriptor(convChatField));
-
-        var chatJidField = Unobfuscator.loadAntiRevokeChatJidField(loader);
-        logDebug(Unobfuscator.getFieldDescriptor(chatJidField));
 
         var antiRevokeMessageMethod = Unobfuscator.loadAntiRevokeMessageMethod(loader);
         logDebug(Unobfuscator.getMethodDescriptor(antiRevokeMessageMethod));
@@ -87,26 +74,6 @@ public class XAntiRevoke extends XHookBase {
 
         var statusPlaybackField = Unobfuscator.loadStatusPlaybackViewField(loader);
         logDebug(Unobfuscator.getFieldDescriptor(statusPlaybackField));
-
-        XposedBridge.hookMethod(onStartMethod, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) {
-                mConversation = (Activity) param.thisObject;
-                var chatField = XposedHelpers.getObjectField(mConversation, convChatField.getName());
-                var chatJidObj = XposedHelpers.getObjectField(chatField, chatJidField.getName());
-                setCurrentJid(stripJID(getRawString(chatJidObj)));
-            }
-        });
-
-        XposedBridge.hookMethod(onResumeMethod, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) {
-                mConversation = (Activity) param.thisObject;
-                var chatField = XposedHelpers.getObjectField(mConversation, convChatField.getName());
-                var chatJidObj = XposedHelpers.getObjectField(chatField, chatJidField.getName());
-                setCurrentJid(stripJID(getRawString(chatJidObj)));
-            }
-        });
 
         XposedBridge.hookMethod(antiRevokeMessageMethod, new XC_MethodHook() {
             @Override
@@ -203,23 +170,9 @@ public class XAntiRevoke extends XHookBase {
         Object fieldMessageDetails = XposedHelpers.getObjectField(objMessage, fieldMessageKey.getName());
         Object fieldMessageAuthorJid = XposedHelpers.getObjectField(fieldMessageDetails, "A00");
         if (fieldMessageAuthorJid == null) return "";
-        else return getRawString(fieldMessageAuthorJid);
+        else return WppCore.getRawString(fieldMessageAuthorJid);
     }
 
-    public static String getRawString(Object objJid) {
-        if (objJid == null) return "";
-        else return (String) XposedHelpers.callMethod(objJid, "getRawString");
-    }
-
-    private static String getCurrentJid() {
-        if (mShared == null) return "";
-        else return mShared.getString("jid", "");
-    }
-
-    private static void setCurrentJid(String jid) {
-        if (jid == null || mShared == null) return;
-        mShared.edit().putString("jid", jid).apply();
-    }
 
     @SuppressLint({"DiscouragedApi","UseCompatLoadingForDrawables"})
     private void isMRevoked(Object objMessage, TextView dateTextView, String antirevokeType) {
@@ -282,8 +235,8 @@ public class XAntiRevoke extends XHookBase {
                 AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
                     saveRevokedMessage(stripJID, messageKey, objMessage);
                     try {
-                        if (mConversation != null && getCurrentJid().equals(stripJID)) {
-
+                        var mConversation = WppCore.getCurrenConversation();
+                        if (mConversation != null && WppCore.stripJID(WppCore.getCurrentRawJID()).equals(stripJID)) {
                             mConversation.runOnUiThread(() -> {
                                 if (mConversation.hasWindowFocus()) {
                                     mConversation.startActivity(mConversation.getIntent());

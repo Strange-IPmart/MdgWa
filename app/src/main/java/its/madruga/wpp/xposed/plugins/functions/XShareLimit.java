@@ -28,7 +28,6 @@ public class XShareLimit extends XHookBase {
                         if (prefs.getBoolean("removeforwardlimit", false)) {
                             XposedHelpers.setBooleanField(param.thisObject, shareLimitField.getName(), true);
                         }
-                        super.beforeHookedMethod(param);
                     }
                 });
     }

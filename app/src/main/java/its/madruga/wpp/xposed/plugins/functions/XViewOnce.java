@@ -24,6 +24,7 @@ import de.robv.android.xposed.XposedHelpers;
 import its.madruga.wpp.xposed.Unobfuscator;
 import its.madruga.wpp.xposed.models.XHookBase;
 import its.madruga.wpp.xposed.plugins.core.ResId;
+import its.madruga.wpp.xposed.plugins.core.Utils;
 
 public class XViewOnce extends XHookBase {
     public XViewOnce(ClassLoader loader, XSharedPreferences preferences) {
@@ -72,9 +73,8 @@ public class XViewOnce extends XHookBase {
 
                     if (XposedHelpers.getIntField(param.thisObject, menuIntField.getName()) == 3) {
                         Menu menu = (Menu) param.args[0];
-                        var idIconDownload = mApp.getResources().getIdentifier("btn_download", "drawable", mApp.getPackageName());
-                        MenuItem item = menu.add(0, 0, 0, ResId.string.download).setIcon(idIconDownload);
-                        item.setShowAsAction(2);
+                        MenuItem item = menu.add(0, 0, 0, ResId.string.download).setIcon(Utils.getID("btn_download", "drawable"));
+                        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
                         item.setOnMenuItemClickListener(item1 -> {
                             var i = XposedHelpers.getIntField(param.thisObject, initIntField.getName());
                             var message = callMethod.getParameterCount() == 2 ? XposedHelpers.callMethod(param.thisObject, callMethod.getName(), param.thisObject, i) : XposedHelpers.callMethod(param.thisObject, callMethod.getName(), i);

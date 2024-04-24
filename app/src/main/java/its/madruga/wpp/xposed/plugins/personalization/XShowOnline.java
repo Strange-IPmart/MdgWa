@@ -21,6 +21,7 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import its.madruga.wpp.xposed.Unobfuscator;
 import its.madruga.wpp.xposed.models.XHookBase;
+import its.madruga.wpp.xposed.plugins.core.WppCore;
 import its.madruga.wpp.xposed.plugins.core.XMain;
 
 public class XShowOnline extends XHookBase {
@@ -95,14 +96,15 @@ public class XShowOnline extends XHookBase {
                 var view = (View) views.get(viewHolder);
                 var csDot = (ImageView) view.findViewById(0x7FFF0001);
                 csDot.setVisibility(View.INVISIBLE);
-                var jidClass = XposedHelpers.findClass("com.whatsapp.jid.Jid", loader);
-                var jidFiled = Unobfuscator.getFieldByExtendType(object.getClass(), jidClass);
+                var jidFiled = Unobfuscator.getFieldByExtendType(object.getClass(), XposedHelpers.findClass("com.whatsapp.jid.Jid", loader));
                 var jidObject = jidFiled.get(object);
-                var jid = (String) XposedHelpers.callMethod(jidObject, "getRawString");
+                var jid = WppCore.getRawString(jidObject);
                 if (jid.contains("@g.us")) return;
+
                 var clazz = sendPresenceMethod.getParameterTypes()[1];
                 var instance = XposedHelpers.newInstance(clazz, new Object[]{null, null});
                 sendPresenceMethod.invoke(null, jidObject, instance, mInstancePresence);
+
                 var status = (String) getStatusUser.invoke(mStatusUser, object);
                 if (!TextUtils.isEmpty(status) && !status.matches(".*\\d.*")) {
                     csDot.setVisibility(View.VISIBLE);

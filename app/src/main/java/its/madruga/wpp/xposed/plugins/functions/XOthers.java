@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
@@ -21,7 +23,10 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import its.madruga.wpp.xposed.Unobfuscator;
 import its.madruga.wpp.xposed.models.XHookBase;
+import its.madruga.wpp.xposed.plugins.core.DesignUtils;
 import its.madruga.wpp.xposed.plugins.core.ResId;
+import its.madruga.wpp.xposed.plugins.core.Utils;
+import its.madruga.wpp.xposed.plugins.core.WppCore;
 
 public class XOthers extends XHookBase {
 
@@ -34,6 +39,9 @@ public class XOthers extends XHookBase {
     @Override
     public void doHook() throws Exception {
 
+
+        // Removido pois as não há necessidade de ficar em uma versão obsoleta.
+
 //        var deprecatedMethod = Unobfuscator.loadDeprecatedMethod(loader);
 //        logDebug(Unobfuscator.getMethodDescriptor(deprecatedMethod));
 //
@@ -44,18 +52,19 @@ public class XOthers extends XHookBase {
 //                param.setResult(date);
 //            }
 //        });
-        var novoTema =  prefs.getBoolean("novotema", false);
-        var menuWIcons =  prefs.getBoolean("menuwicon", false);
+        var novoTema = prefs.getBoolean("novotema", false);
+        var menuWIcons = prefs.getBoolean("menuwicon", false);
         var newSettings = prefs.getBoolean("novaconfig", false);
         var filterChats = prefs.getBoolean("barfilter", false);
         var strokeButtons = prefs.getBoolean("strokebuttons", false);
         var outlinedIcons = prefs.getBoolean("outlinedicons", false);
         var showDnd = prefs.getBoolean("show_dndmode", false);
 
+        props.put(5171, true); // lupa de pesquisa
         props.put(4524, novoTema);
         props.put(4497, menuWIcons);
         props.put(4023, newSettings);
-        props.put(8013, filterChats);
+        props.put(8013, filterChats); // lupa sera removida e sera adicionado uma barra no lugar.
         props.put(5834, strokeButtons);
         props.put(5509, outlinedIcons);
         props.put(2358, false);
@@ -64,26 +73,19 @@ public class XOthers extends XHookBase {
         var methodProps = Unobfuscator.loadPropsMethod(loader);
         logDebug(Unobfuscator.getMethodDescriptor(methodProps));
 
+        var dataUsageActivityClass = XposedHelpers.findClass("com.whatsapp.settings.SettingsDataUsageActivity", loader);
+
         XposedBridge.hookMethod(methodProps, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 int i = (int) (param.args.length > 2 ? param.args[2] : param.args[1]);
 
                 var propValue = props.get(i);
-                if (propValue != null) {
-                    var stacktrace = Thread.currentThread().getStackTrace();
-                    var stackTraceElement = stacktrace[6];
-                    if (stackTraceElement != null) {
-                        if (stackTraceElement.getClassName().equals("com.whatsapp.HomeActivity$TabsPager")) {
-                            if (i == 3289) {
-                                param.setResult(false);
-                            }
-                        } else {
-                            param.setResult(propValue);
-                        }
-                    } else {
-                        param.setResult(propValue);
-                    }
+                if (propValue == null) return;
+                param.setResult(propValue);
+                // Fix Bug in Settings Data Usage
+                if (i == 4023 && propValue && Unobfuscator.isCalledFromClass(dataUsageActivityClass)) {
+                    param.setResult(false);
                 }
             }
         });
@@ -95,12 +97,15 @@ public class XOthers extends XHookBase {
                 Menu menu = (Menu) param.args[0];
                 Activity home = (Activity) param.thisObject;
                 @SuppressLint({"UseCompatLoadingForDrawables", "DiscouragedApi"})
-                var iconDraw = home.getDrawable(home.getResources().getIdentifier("vec_account_switcher", "drawable", home.getPackageName()));
+                var iconDraw = DesignUtils.getDrawableByName("vec_account_switcher");
                 iconDraw.setTint(0xff8696a0);
-                menu.add(0, 0, 0, ResId.string.restart_whatsapp).setIcon(iconDraw).setOnMenuItemClickListener(item -> {
+                var itemMenu = menu.add(0, 0, 0, ResId.string.restart_whatsapp).setIcon(iconDraw).setOnMenuItemClickListener(item -> {
                     restartApp(home);
                     return true;
                 });
+                if (newSettings) {
+                    itemMenu.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                }
                 if (showDnd) {
                     InsertDNDOption(menu, home);
                 } else {
@@ -123,15 +128,11 @@ public class XOthers extends XHookBase {
     private static void InsertDNDOption(Menu menu, Activity home) {
         var shared = mApp.getSharedPreferences(mApp.getPackageName() + "_mdgwa_preferences", Context.MODE_PRIVATE);
         var dndmode = shared.getBoolean("dndmode", false);
-        Drawable iconDraw;
-        if (dndmode) {
-            iconDraw = mApp.getDrawable(mApp.getResources().getIdentifier("ic_location_nearby_disabled", "drawable", mApp.getPackageName()));
-        } else {
-            iconDraw = mApp.getDrawable(mApp.getResources().getIdentifier("ic_location_nearby", "drawable", mApp.getPackageName()));
-        }
-        var item = menu.add(0, 0, 1, "Dnd Mode " + dndmode);
+        int iconDraw;
+        iconDraw = Utils.getID(dndmode ? "ic_location_nearby_disabled" : "ic_location_nearby", "drawable");
+        var item = menu.add(0, 0, 0, "Dnd Mode " + dndmode);
         item.setIcon(iconDraw);
-        item.setShowAsAction(2);
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         item.setOnMenuItemClickListener(menuItem -> {
             if (!dndmode) {
                 new AlertDialog.Builder(home)

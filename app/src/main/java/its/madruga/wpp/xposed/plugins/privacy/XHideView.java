@@ -41,15 +41,10 @@ public class XHideView extends XHookBase {
         XposedBridge.hookMethod(hideViewMethod, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (prefs.getBoolean("hideread", false)){
-                    var stacktrace = Thread.currentThread().getStackTrace();
-                    for (StackTraceElement stackTraceElement : stacktrace) {
-                        if (stackTraceElement.getClassName().equals(hideViewInChatMethod.getDeclaringClass().getName())
-                                && stackTraceElement.getMethodName().equals(hideViewInChatMethod.getName())) {
-                            if (param.args[4] != null && param.args[4].equals("read")) {
-                                param.args[4] = null;
-                            }
-                            break;
+                if (prefs.getBoolean("hideread", false)) {
+                    if (Unobfuscator.isCalledFromMethod(hideViewInChatMethod)) {
+                        if (param.args[4] != null && param.args[4].equals("read")) {
+                            param.args[4] = null;
                         }
                     }
                 }

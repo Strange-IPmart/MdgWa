@@ -135,6 +135,15 @@ public class Unobfuscator {
         return false;
     }
 
+    public static boolean isCalledFromMethod(Method method) {
+        var trace = Thread.currentThread().getStackTrace();
+        for (StackTraceElement stackTraceElement : trace) {
+            if (stackTraceElement.getClassName().equals(method.getDeclaringClass().getName()) && stackTraceElement.getMethodName().equals(method.getName()))
+                return true;
+        }
+        return false;
+    }
+
 
     // TODO: Classes and Methods for FreezeSeen
     public static Method loadFreezeSeenMethod(ClassLoader classLoader) throws Exception {
@@ -1247,4 +1256,6 @@ public class Unobfuscator {
             return method;
         });
     }
+
+
 }
