@@ -5,7 +5,6 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -39,7 +38,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import de.robv.android.xposed.XposedBridge;
@@ -619,10 +617,10 @@ public class Unobfuscator {
         return clazz;
     }
 
-    public static Class loadViewOnceClass2(ClassLoader loader) throws Exception {
-        var clazz = findFirstClassUsingStrings(loader, StringMatchType.Contains, "INSERT_VIEW_ONCE_SQL");
-        if (clazz == null) throw new Exception("ViewOnce class not found");
-        return clazz;
+    public static Method loadViewOnceStoreMethod(ClassLoader loader) throws Exception {
+        var method = findFirstMethodUsingStrings(loader, StringMatchType.Contains, "INSERT_VIEW_ONCE_SQL");
+        if (method == null) throw new Exception("ViewOnce class not found");
+        return method;
     }
 
 
@@ -790,7 +788,7 @@ public class Unobfuscator {
         });
     }
 
-    public static Field loadAntiRevokeMessageKeyField(ClassLoader loader) throws Exception {
+    public static Field loadMessageKeyField(ClassLoader loader) throws Exception {
         return UnobfuscatorCache.getInstance().getField(loader, () -> {
             Class<?> classExtendJid = loadAntiRevokeChatJidField(loader).getType();
             ClassDataList classes = dexkit.findClass(

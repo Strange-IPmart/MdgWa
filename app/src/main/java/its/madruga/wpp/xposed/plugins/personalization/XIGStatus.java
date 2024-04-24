@@ -52,7 +52,7 @@ public class XIGStatus extends XHookBase {
                 mStatusContainer = new IGStatusView(homeActivity);
                 var layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, Utils.dipToPixels(105));
                 layoutParams.gravity = Gravity.TOP;
-                layoutParams.topMargin = prefs.getBoolean("barfilter", false) ? Utils.dipToPixels(112) : Utils.dipToPixels(56);
+                layoutParams.topMargin = prefs.getInt("chatfilter", 0) == 2 ? Utils.dipToPixels(112) : Utils.dipToPixels(56);
                 mStatusContainer.setLayoutParams(layoutParams);
                 mStatusContainer.setBackgroundColor(Color.TRANSPARENT);
                 var mainContainer = homeActivity.findViewById(Utils.getID("main_container", "id"));

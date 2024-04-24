@@ -96,15 +96,6 @@
                     other:reboot="true"
                     android:text="@string/show_online_dot_in_conversation_list" />
 
-                <its.madruga.wpp.views.SwitchButton
-                    android:id="@+id/novofiltro"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:summary="@string/novofiltro_sum"
-                    android:tag="barfilter"
-                    other:reboot="true"
-                    android:text="@string/novofiltro" />
-
                 <its.madruga.wpp.views.MultichoiceButton
                     android:id="@+id/hidetabs"
                     android:layout_width="match_parent"
@@ -124,6 +115,17 @@
                     android:tag="igstatus"
                     other:reboot="true"
                     android:text="@string/igstatus_on_home_screen" />
+
+                <its.madruga.wpp.views.RadioButton
+                    android:id="@+id/chatfilter"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:summary="@string/novofiltro_sum"
+                    android:entries="@array/chatfilter_buttons"
+                    android:entryValues="@array/chatfilter_values"
+                    android:tag="chatfilter"
+                    other:reboot="true"
+                    android:text="@string/novofiltro" />
 
             </LinearLayout>
 

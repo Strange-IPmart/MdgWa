@@ -185,7 +185,7 @@ public class WppCore {
     }
 
     public static Activity getMainActivity() {
-        return ((Activity) mainActivity);
+        return (Activity) mainActivity;
     }
 
 

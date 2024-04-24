@@ -3,7 +3,6 @@ package its.madruga.wpp.xposed.plugins.functions;
 import static its.madruga.wpp.xposed.plugins.core.XMain.mApp;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -60,7 +59,7 @@ public class XAntiRevoke extends XHookBase {
         var classThreadMessage = Unobfuscator.loadThreadMessageClass(loader);
         logDebug("Class: " + classThreadMessage);
 
-        fieldMessageKey = Unobfuscator.loadAntiRevokeMessageKeyField(loader);
+        fieldMessageKey = Unobfuscator.loadMessageKeyField(loader);
         logDebug(Unobfuscator.getFieldDescriptor(fieldMessageKey));
 
         getFieldIdMessage = Unobfuscator.loadSetEditMessageField(loader);

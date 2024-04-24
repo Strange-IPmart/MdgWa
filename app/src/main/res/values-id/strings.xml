@@ -163,4 +163,7 @@ Anda perlu mengaktifkan dan mengatur ulang kembali</string>
     <string name="about">About</string>
     <string name="igstatus_on_home_screen">Enable IGStatus on Home Screen</string>
     <string name="igstatus_on_home_screen_sum">Show status style Instagram in Home Screen</string>
+    <string name="chatfilter_no_search">No search</string>
+    <string name="chatfilter_search_icon">Search icon</string>
+    <string name="chatfilter_search_bar">Search bar</string>
 </resources>

@@ -157,4 +157,7 @@
     <string name="about">Sobre</string>
     <string name="igstatus_on_home_screen">Mostrar o IGStatus na Tela Inicial</string>
     <string name="igstatus_on_home_screen_sum">Exibe na tela inicial um barra com os status estilo Instagram</string>
+    <string name="chatfilter_no_search">Desativado</string>
+    <string name="chatfilter_search_icon">Ícone de pesquisa</string>
+    <string name="chatfilter_search_bar">Barra de pesquisa</string>
 </resources>
