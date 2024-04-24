@@ -55,11 +55,9 @@ public class XChatsFilter extends XHookBase {
 
         // Modifying tab list order
         hookTabList(home);
-
+        if (!prefs.getBoolean("separategroups", false)) return;
         // Setting group icon
         hookTabIcon();
-
-        if (!prefs.getBoolean("separategroups", false)) return;
         // Setting up fragments
         hookTabInstance(cFrag);
         // Setting group tab name
@@ -158,11 +156,6 @@ public class XChatsFilter extends XHookBase {
         var iconField = Unobfuscator.loadIconTabField(loader);
         var iconFrameField = Unobfuscator.loadIconTabLayoutField(loader);
         var iconMenuField = Unobfuscator.loadIconMenuField(loader);
-
-        var hidetabs = prefs.getString("hidetabs", null);
-        if (hidetabs == null || hidetabs.isEmpty()) return;
-        var hideTabsList = Arrays.asList(hidetabs.split(","));
-
 
         XposedBridge.hookMethod(iconTabMethod, new XC_MethodHook() {
             @SuppressLint("ResourceType")
@@ -317,12 +310,6 @@ public class XChatsFilter extends XHookBase {
         var fieldTabsList = Arrays.stream(home.getDeclaredFields()).filter(f -> f.getType().equals(List.class)).findFirst().orElse(null);
         fieldTabsList.setAccessible(true);
 
-
-        var hidetabs = prefs.getString("hidetabs", null);
-        if (hidetabs == null || hidetabs.isEmpty()) return;
-        var hideTabsList = Arrays.asList(hidetabs.split(","));
-
-
         XposedBridge.hookMethod(onCreateTabList, new XC_MethodHook() {
             @Override
             @SuppressWarnings("unchecked")
@@ -335,6 +322,10 @@ public class XChatsFilter extends XHookBase {
                 }
             }
         });
+
+        var hidetabs = prefs.getString("hidetabs", null);
+        if (hidetabs == null || hidetabs.isEmpty()) return;
+        var hideTabsList = Arrays.asList(hidetabs.split(","));
 
         var OnTabItemAddMethod = Unobfuscator.loadOnTabItemAddMethod(loader);
         XposedBridge.hookMethod(OnTabItemAddMethod, new XC_MethodHook() {
