@@ -1,6 +1,7 @@
 package its.madruga.wpp.xposed;
 
 import android.annotation.SuppressLint;
+import android.graphics.drawable.NinePatchDrawable;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -32,6 +33,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -1254,4 +1256,13 @@ public class Unobfuscator {
     }
 
 
+    public static List<Method> loadNineDrawableMethods(ClassLoader loader) throws Exception {
+        var result = dexkit.findMethod(new FindMethod().matcher(new MethodMatcher().returnType(NinePatchDrawable.class).paramCount(4)));
+        if (result.isEmpty()) return Collections.emptyList();
+        var arr = new ArrayList<Method>();
+        for (var m : result) {
+            if (m.isMethod()) arr.add(m.getMethodInstance(loader));
+        }
+        return arr;
+    }
 }
