@@ -98,12 +98,12 @@ public class XIGStatus extends XHookBase {
 
         var onMenuItemSelected = Unobfuscator.loadOnMenuItemSelected(loader);
         var separateGroups = prefs.getBoolean("separategroups", false);
+        var onMenuItemClick = Unobfuscator.loadOnMenuItemClickClass(loader);
 
         XposedBridge.hookMethod(onMenuItemSelected, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.status.playback.StatusPlaybackActivity", loader))) return;
-                if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.gallery.GalleryTabHostFragment", loader))) return;
+                if (!Unobfuscator.isCalledFromClass(clazz) && !Unobfuscator.isCalledFromClass(onMenuItemClick)) return;
                 var index = (int) param.args[0];
                 WppCore.getMainActivity().runOnUiThread(() -> {
                     XposedHelpers.setObjectField(WppCore.getMainActivity(), "A02", 0);

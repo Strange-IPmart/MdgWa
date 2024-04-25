@@ -345,18 +345,18 @@ public class XChatsFilter extends XHookBase {
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 if (!loadTabFrameClass.isInstance(param.thisObject)) return;
                 for (var item : hideTabsList) {
-                    ((View)param.thisObject).findViewById(Integer.parseInt(item)).setVisibility(View.GONE);
+                    ((View) param.thisObject).findViewById(Integer.parseInt(item)).setVisibility(View.GONE);
                 }
             }
         });
 
         var onMenuItemSelected = Unobfuscator.loadOnMenuItemSelected(loader);
+        var onMenuItemClick = Unobfuscator.loadOnMenuItemClickClass(loader);
+
         XposedBridge.hookMethod(onMenuItemSelected, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.status.playback.StatusPlaybackActivity", loader)))
-                    return;
-                if (Unobfuscator.isCalledFromClass(XposedHelpers.findClass("com.whatsapp.gallery.GalleryTabHostFragment", loader)))
+                if (!Unobfuscator.isCalledFromClass(home) && !Unobfuscator.isCalledFromClass(onMenuItemClick))
                     return;
                 var index = (int) param.args[0];
                 param.args[0] = getNewTabIndex(hideTabsList, index);

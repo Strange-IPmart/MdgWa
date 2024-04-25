@@ -1265,4 +1265,12 @@ public class Unobfuscator {
         }
         return arr;
     }
+
+    public static Class loadOnMenuItemClickClass(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getClass(loader, () -> {
+            var clazz = findFirstClassUsingStrings(loader, StringMatchType.Contains, "android:menu:expandedactionview");
+            if (clazz == null) throw new RuntimeException("OnMenuItemClick class not found");
+            return clazz;
+        });
+    }
 }
