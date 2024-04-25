@@ -153,18 +153,19 @@ public class XBlueTick extends XHookBase {
                 var contentView = (LinearLayout) view.findViewById(Utils.getID("bottom_sheet", "id"));
                 var buttonImage = new ImageView(XMain.mApp);
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams((int) Utils.dipToPixels(32), (int) Utils.dipToPixels(32));
-                params.gravity = Gravity.END;
-                params.setMargins(0, 0, (int) Utils.dipToPixels(8), 0);
+                params.gravity = Gravity.CENTER_VERTICAL;
+                params.setMargins(Utils.dipToPixels(5), Utils.dipToPixels(5), 0, 0);
                 buttonImage.setLayoutParams(params);
                 buttonImage.setImageResource(Utils.getID("ic_notif_mark_read", "drawable"));
                 GradientDrawable border = new GradientDrawable();
                 border.setShape(GradientDrawable.RECTANGLE);
-                border.setStroke(2, Color.WHITE);
+                border.setStroke(1, Color.WHITE);
                 border.setCornerRadius(20);
                 border.setColor(Color.parseColor("#80000000"));
                 buttonImage.setBackground(border);
+                contentView.setOrientation(LinearLayout.HORIZONTAL);
                 contentView.addView(buttonImage, 0);
-                contentView.setPadding(0, contentView.getPaddingTop() - (int) Utils.dipToPixels(32), 0, 0);
+//                contentView.setPadding(0, contentView.getPaddingTop() - (int) Utils.dipToPixels(32), 0, 0);
                 buttonImage.setOnClickListener(v -> {
                     new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(XMain.mApp, "Sending read blue tick..", Toast.LENGTH_SHORT).show());
                     sendBlueTickStatus(currentJid);
