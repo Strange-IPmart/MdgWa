@@ -46,6 +46,9 @@ public class XBubbleColors extends XHookBase {
             balloonPressed.setColorFilter(new PorterDuffColorFilter(parseColor(bubbleRightColor), PorterDuff.Mode.SRC_IN));
             DesignUtils.setReplacementDrawable("balloon_outgoing_pressed", balloonPressed);
 
+            var balloonSticker = DesignUtils.getDrawableByName("balloon_outgoing_normal_stkr");
+            balloonSticker.setColorFilter(new PorterDuffColorFilter(parseColor(bubbleRightColor), PorterDuff.Mode.SRC_IN));
+            DesignUtils.setReplacementDrawable("balloon_outgoing_normal_stkr", balloonSticker);
         }
 
         if (!bubbleLeftColor.equals("0")) {
@@ -65,6 +68,10 @@ public class XBubbleColors extends XHookBase {
             var balloonPressed = DesignUtils.getDrawableByName("balloon_incoming_pressed");
             balloonPressed.setColorFilter(new PorterDuffColorFilter(parseColor(bubbleLeftColor), PorterDuff.Mode.SRC_IN));
             DesignUtils.setReplacementDrawable("balloon_incoming_pressed", balloonPressed);
+
+            var balloonSticker = DesignUtils.getDrawableByName("balloon_incoming_normal_stkr");
+            balloonSticker.setColorFilter(new PorterDuffColorFilter(parseColor(bubbleLeftColor), PorterDuff.Mode.SRC_IN));
+            DesignUtils.setReplacementDrawable("balloon_incoming_normal_stkr", balloonSticker);
 
         }
 

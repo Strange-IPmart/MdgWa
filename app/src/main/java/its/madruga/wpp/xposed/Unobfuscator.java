@@ -1273,4 +1273,37 @@ public class Unobfuscator {
             return clazz;
         });
     }
+
+    public static Class loadRemoveChannelRecClass(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getClass(loader, () -> {
+            var clazz = findFirstClassUsingStrings(loader, StringMatchType.Contains, "RecommendedNewslettersListDataItem(recommendedNewsletters=");
+            if (clazz == null) throw new RuntimeException("RemoveChannelRec class not found");
+            return clazz;
+        });
+    }
+
+    public static Class loadFilterAdaperClass(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getClass(loader, () -> {
+            var clazzList = dexkit.findClass(new FindClass().matcher(new ClassMatcher().addMethod(new MethodMatcher().addUsingString("CONTACTS_FILTER").paramCount(1).addParamType(int.class))));
+            if (clazzList.isEmpty()) throw new RuntimeException("FilterAdapter class not found");
+            return clazzList.get(0).getInstance(loader);
+        });
+    }
+
+    public static Method loadSeeMoreMethod(ClassLoader loader) throws Exception {
+        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
+            var classList = dexkit.findClass(new FindClass().matcher(new ClassMatcher().
+                    addMethod(new MethodMatcher().addUsingNumber(16384).addUsingNumber(512).addUsingNumber(64).addUsingNumber(16))
+                    .addMethod(new MethodMatcher().paramCount(2).addParamType(int.class).addParamType(boolean.class))));
+            if (classList.isEmpty()) throw new RuntimeException("SeeMore method 1 not found");
+            var clazzData = classList.get(0);
+            XposedBridge.log(clazzData.toString());
+            for (var method : clazzData.getMethods()) {
+                if (method.getParamCount() == 2 && method.getParamTypes().get(0).getName().equals(int.class.getName()) && method.getParamTypes().get(1).getName().equals(boolean.class.getName())) {
+                    return method.getMethodInstance(loader);
+                }
+            }
+            throw new RuntimeException("SeeMore method 2 not found");
+        });
+    }
 }
