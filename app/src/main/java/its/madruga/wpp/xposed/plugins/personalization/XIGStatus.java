@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 
@@ -88,7 +89,7 @@ public class XIGStatus extends XHookBase {
                 mainView.setNestedScrollingEnabled(true);
                 var paddingView = new View(WppCore.getMainActivity());
                 paddingView.setClickable(true);
-                var layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, Utils.dipToPixels(105));
+                var layoutParams = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, Utils.dipToPixels(105));
                 paddingView.setLayoutParams(layoutParams);
                 mainView.addHeaderView(paddingView);
             }

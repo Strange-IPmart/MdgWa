@@ -158,6 +158,18 @@ public class XOthers extends XHookBase {
                     }
                 }
             });
+            var methodSetFilter = Arrays.stream(filterAdaperClass.getDeclaredMethods()).filter(m -> m.getParameterCount() == 1 && m.getParameterTypes()[0].equals(int.class)).findFirst().orElse(null);
+
+            XposedBridge.hookMethod(methodSetFilter, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    var index = (int) param.args[0];
+                    var list = (List) XposedHelpers.getObjectField(param.thisObject, "A01");
+                    if (list == null || index >= list.size()) {
+                        param.setResult(null);
+                    }
+                }
+            });
         }
 
 
