@@ -109,8 +109,8 @@
     <string name="imagequality_sum">Отправляйте изображения в HD-качестве.</string>
     <string name="downloadviewonce">Скачать Посмотреть один раз</string>
     <string name="downloadviewonce_sum">Кнопка «Создать представление после загрузки»</string>
-    <string name="separate_groups_sum">Разделяйте чаты по: группам, приватным чатам, статусу, звонкам, сообществам.</string>
     <string name="separate_groups">Отдельные группы</string>
+    <string name="separate_groups_sum">Разделяйте чаты по: группам, приватным чатам, статусу, звонкам, сообществам.</string>
     <string name="blueonreply">Отправить синюю галочку в ответ</string>
     <string name="blueonreply_sum">Отправляет синюю галочку при ответе на сообщение</string>
     <string name="hide_archived_chat">Hide archived chat</string>

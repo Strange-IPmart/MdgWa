@@ -113,8 +113,8 @@ Anda perlu mengaktifkan dan mengatur ulang kembali</string>
     <string name="imagequality_sum">Kirim gambar dalam kualitas HD</string>
     <string name="downloadviewonce">Unduh Sekali Lihat</string>
     <string name="downloadviewonce_sum">Tampilkan tombol untuk mengunduh pesan \"lihat sekali\"</string>
-    <string name="separate_groups_sum">Pisahkan obrolan anda berdasarkan: Chat, Grup, Status, Komunitas, Panggilan</string>
     <string name="separate_groups">Grup terpisah</string>
+    <string name="separate_groups_sum">Pisahkan obrolan anda berdasarkan: Chat, Grup, Status, Komunitas, Panggilan</string>
     <string name="blueonreply">Centang biru setelah membalas</string>
     <string name="blueonreply_sum">Kontak hanya akan melihat tanda centang biru setelah Anda membalas pesan
 (CATATAN: Harus mengaktifkan \"Sembunyikan centang biru\")</string>

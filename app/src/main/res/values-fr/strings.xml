@@ -109,8 +109,8 @@
     <string name="imagequality_sum">Envoyez des images en qualité HD</string>
     <string name="downloadviewonce">Télécharger la vue une fois</string>
     <string name="downloadviewonce_sum">Créer une vue une fois le bouton de téléchargement</string>
-    <string name="separate_groups_sum">Séparez vos discussions par : groupes, discussions privées, statut, appels, communautés</string>
     <string name="separate_groups">Groupes séparés</string>
+    <string name="separate_groups_sum">Séparez vos discussions par : groupes, discussions privées, statut, appels, communautés</string>
     <string name="blueonreply">Envoyer une coche bleue lors de la réponse</string>
     <string name="blueonreply_sum">Envoie la coche bleue lors de la réponse au message</string>
     <string name="hide_archived_chat">Hide archived chat</string>
