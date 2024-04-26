@@ -8,10 +8,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
@@ -29,7 +27,6 @@ import its.madruga.wpp.xposed.models.XHookBase;
 import its.madruga.wpp.xposed.plugins.core.DesignUtils;
 import its.madruga.wpp.xposed.plugins.core.ResId;
 import its.madruga.wpp.xposed.plugins.core.Utils;
-import its.madruga.wpp.xposed.plugins.core.WppCore;
 
 public class XOthers extends XHookBase {
 
@@ -171,8 +168,6 @@ public class XOthers extends XHookBase {
                 }
             });
         }
-
-
     }
 
     private static void restartApp(Activity home) {

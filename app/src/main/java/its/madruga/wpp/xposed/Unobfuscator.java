@@ -1,6 +1,5 @@
 package its.madruga.wpp.xposed;
 
-import android.annotation.SuppressLint;
 import android.graphics.drawable.NinePatchDrawable;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -45,7 +44,6 @@ import java.util.stream.Collectors;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import its.madruga.wpp.xposed.plugins.core.Utils;
-import its.madruga.wpp.xposed.plugins.core.XMain;
 
 public class Unobfuscator {
 
@@ -260,30 +258,8 @@ public class Unobfuscator {
     }
 
     // TODO: Classes and Methods for BubbleColors
-    @SuppressLint("DiscouragedApi")
-    private static ClassDataList loadBubbleColorsClass() {
-        if (cache.containsKey("balloon")) return (ClassDataList) cache.get("balloon");
-        var balloonIncomingNormal = XMain.mApp.getResources().getIdentifier(BUBBLE_COLORS_BALLOON_INCOMING_NORMAL, "drawable", XMain.mApp.getPackageName());
-        var balloonIncomingNormalExt = XMain.mApp.getResources().getIdentifier(BUBBLE_COLORS_BALLOON_INCOMING_NORMAL_EXT, "drawable", XMain.mApp.getPackageName());
-        var balloonOutgoingNormal = XMain.mApp.getResources().getIdentifier(BUBBLE_COLORS_BALLOON_OUTGOING_NORMAL, "drawable", XMain.mApp.getPackageName());
-        var balloonOutgoingNormalExt = XMain.mApp.getResources().getIdentifier(BUBBLE_COLORS_BALLOON_OUTGOING_NORMAL_EXT, "drawable", XMain.mApp.getPackageName());
-        var clsBubbleColors = dexkit.findClass(new FindClass().matcher(new ClassMatcher()
-                .addMethod(new MethodMatcher().addUsingNumber(balloonIncomingNormal))
-                .addMethod(new MethodMatcher().addUsingNumber(balloonOutgoingNormal))
-                .addMethod(new MethodMatcher().addUsingNumber(balloonIncomingNormalExt))
-                .addMethod(new MethodMatcher().addUsingNumber(balloonOutgoingNormalExt))
-        ));
-        cache.put("balloon", clsBubbleColors);
-        return clsBubbleColors;
-    }
 
-    @SuppressLint("DiscouragedApi")
-    public static Method loadBubbleColorsMethod(ClassLoader classLoader, String name) throws Exception {
-        var clsBubbleColors = loadBubbleColorsClass();
-        var id = XMain.mApp.getResources().getIdentifier(name, "drawable", XMain.mApp.getPackageName());
-        var result = dexkit.findMethod(new FindMethod().searchInClass(clsBubbleColors).matcher(new MethodMatcher().addUsingNumber(id)));
-        return result.get(0).getMethodInstance(classLoader);
-    }
+
 
 
     // TODO: Classes and Methods for XChatFilter
@@ -918,14 +894,6 @@ public class Unobfuscator {
         });
     }
 
-    public static Field loadContactManagerField(ClassLoader loader) throws Exception {
-        return UnobfuscatorCache.getInstance().getField(loader, () -> {
-            Class<?> class1 = findFirstClassUsingStrings(loader, StringMatchType.Contains, "contactmanager/permission problem:");
-            if (class1 == null) throw new Exception("ContactManager field not found");
-            Class HomeActivity = XposedHelpers.findClass("com.whatsapp.HomeActivity", loader);
-            return getFieldByType(HomeActivity, class1);
-        });
-    }
 
     public static Method loadGetContactInfoMethod(ClassLoader loader) throws Exception {
         return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
@@ -1053,13 +1021,13 @@ public class Unobfuscator {
         });
     }
 
-    public static Method loadOriginalMessageMethod(ClassLoader loader) throws Exception {
-        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
-            var method = findFirstMethodUsingStrings(loader, StringMatchType.Contains, "fmessage-clone-comparison-failed");
-            if (method == null) throw new RuntimeException("OriginalMessage method not found");
-            return method;
-        });
-    }
+//    public static Method loadOriginalMessageMethod(ClassLoader loader) throws Exception {
+//        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
+//            var method = findFirstMethodUsingStrings(loader, StringMatchType.Contains, "fmessage-clone-comparison-failed");
+//            if (method == null) throw new RuntimeException("OriginalMessage method not found");
+//            return method;
+//        });
+//    }
 
     public static Method loadNewMessageMethod(ClassLoader loader) throws Exception {
         return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
