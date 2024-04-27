@@ -42,7 +42,6 @@ public class XShowOnline extends XHookBase {
     public void doHook() throws Throwable {
         if (!prefs.getBoolean("dotonline", false)) return;
 
-
         var classViewHolder = XposedHelpers.findClass("com.whatsapp.conversationslist.ViewHolder", loader);
         XposedBridge.hookAllConstructors(classViewHolder, new XC_MethodHook() {
             @SuppressLint("ResourceType")

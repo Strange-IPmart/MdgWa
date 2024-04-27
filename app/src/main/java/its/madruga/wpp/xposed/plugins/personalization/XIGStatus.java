@@ -27,6 +27,7 @@ import its.madruga.wpp.xposed.Unobfuscator;
 import its.madruga.wpp.xposed.models.XHookBase;
 import its.madruga.wpp.xposed.plugins.core.Utils;
 import its.madruga.wpp.xposed.plugins.core.WppCore;
+import its.madruga.wpp.xposed.plugins.core.XMain;
 
 public class XIGStatus extends XHookBase {
     public static ArrayList<Object> itens = new ArrayList<>();
@@ -40,7 +41,7 @@ public class XIGStatus extends XHookBase {
     @Override
     public void doHook() throws Throwable {
 
-        if (!prefs.getBoolean("igstatus", false)) return;
+        if (!prefs.getBoolean("igstatus", false) || Utils.getApplication().getPackageName().equals("com.whatsapp.w4b")) return;
 
         var clazz = XposedHelpers.findClass("com.whatsapp.HomeActivity", loader);
 

@@ -17,6 +17,7 @@ import org.luckypray.dexkit.query.enums.StringMatchType;
 import org.luckypray.dexkit.query.matchers.ClassMatcher;
 import org.luckypray.dexkit.query.matchers.FieldMatcher;
 import org.luckypray.dexkit.query.matchers.MethodMatcher;
+import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher;
 import org.luckypray.dexkit.result.ClassData;
 import org.luckypray.dexkit.result.ClassDataList;
 import org.luckypray.dexkit.result.MethodData;
@@ -258,8 +259,6 @@ public class Unobfuscator {
     }
 
     // TODO: Classes and Methods for BubbleColors
-
-
 
 
     // TODO: Classes and Methods for XChatFilter
@@ -1008,7 +1007,18 @@ public class Unobfuscator {
             var clazz = findFirstClassUsingStrings(loader, StringMatchType.Contains, "app/time server update processed");
             if (clazz == null) throw new RuntimeException("ChatLimitDelete class not found");
             var method = Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.getReturnType().equals(long.class) && Modifier.isStatic(m.getModifiers())).findFirst().orElse(null);
-            if (method == null) throw new RuntimeException("ChatLimitDelete method not found");
+            if (method == null) {
+                var methodList = Objects.requireNonNull(dexkit.getClassData(clazz)).findMethod(new FindMethod().matcher(new MethodMatcher().opCodes(new OpCodesMatcher().opNames(
+                        List.of("invoke-static",
+                                "move-result-wide", "iget-wide", "const-wide/16", "cmp-long",
+                                "if-eqz", "iget-wide", "add-long/2addr", "return-wide",
+                                "iget-wide", "cmp-long", "if-eqz", "iget-wide",
+                                "goto", "invoke-static", "move-result-wide", "iget-wide",
+                                "sub-long/2addr", "return-wide")))));
+                if (methodList.isEmpty())
+                    throw new RuntimeException("ChatLimitDelete method not found");
+                method = methodList.get(0).getMethodInstance(loader);
+            }
             return method;
         });
     }

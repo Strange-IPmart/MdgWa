@@ -309,7 +309,7 @@ public class XChatsFilter extends XHookBase {
         });
 
         var hidetabs = prefs.getString("hidetabs", null);
-        if (hidetabs == null || hidetabs.isEmpty()) return;
+        if (hidetabs == null || hidetabs.isEmpty() || Utils.getApplication().getPackageName().equals("com.whatsapp.w4b")) return;
         var hideTabsList = Arrays.asList(hidetabs.split(","));
 
         var OnTabItemAddMethod = Unobfuscator.loadOnTabItemAddMethod(loader);
@@ -333,7 +333,9 @@ public class XChatsFilter extends XHookBase {
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 if (!loadTabFrameClass.isInstance(param.thisObject)) return;
                 for (var item : hideTabsList) {
-                    ((View) param.thisObject).findViewById(Integer.parseInt(item)).setVisibility(View.GONE);
+                    View view;
+                    if ((view = (View) param.thisObject).findViewById(Integer.parseInt(item)) != null)
+                        view.setVisibility(View.GONE);
                 }
             }
         });
