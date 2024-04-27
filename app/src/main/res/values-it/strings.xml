@@ -154,14 +154,14 @@
     <string name="communities">Comunità</string>
     <string name="calls">"Chiamate "</string>
     <string name="updates">Aggiornamenti</string>
-    <string name="about">About</string>
-    <string name="igstatus_on_home_screen">Enable IGStatus on Home Screen</string>
-    <string name="igstatus_on_home_screen_sum">Show status style Instagram in Home Screen</string>
-    <string name="chatfilter_no_search">No search</string>
-    <string name="chatfilter_search_icon">Search icon</string>
-    <string name="chatfilter_search_bar">Search bar</string>
-    <string name="remove_channel_recomendations">Remove Channel Recomendations</string>
-    <string name="remove_channel_recomendations_sum">Remove Channel Recomendations from tab Status</string>
-    <string name="remove_see_more_button">Remove \'See More\' Button</string>
-    <string name="remove_see_more_button_">Disable \'See More\' button and show all long message</string>
+    <string name="about">Info</string>
+    <string name="igstatus_on_home_screen">Abilita IGStatus nella Schermata Principale</string>
+    <string name="igstatus_on_home_screen_sum">Mostra lo stile di stato Instagram nella Schermata Principale</string>
+    <string name="chatfilter_no_search">Nessuna ricerca</string>
+    <string name="chatfilter_search_icon">Icona di Ricerca</string>
+    <string name="chatfilter_search_bar">Barra di Ricerca</string>
+    <string name="remove_channel_recomendations">Rimuovi i Suggerimenti dei Canali</string>
+    <string name="remove_channel_recomendations_sum">Rimuovi i Suggerimenti dei Canali dalla scheda Aggiornamenti</string>
+    <string name="remove_see_more_button">Rimuovi il pulsante \'Continua a leggere\'</string>
+    <string name="remove_see_more_button_">Disabilita il pulsante \'Continua a leggere\' e mostra tutto il messaggio lungo</string>
 </resources>
