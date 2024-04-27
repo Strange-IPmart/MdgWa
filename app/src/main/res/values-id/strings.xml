@@ -170,4 +170,5 @@ Anda perlu mengaktifkan dan mengatur ulang kembali</string>
     <string name="remove_channel_recomendations_sum">Sembunyikan rekomendasi saluran dari tab Status</string>
     <string name="remove_see_more_button">Hapus \"Baca selengkapnya\"</string>
     <string name="remove_see_more_button_">Hapus \"Baca selengkapnya\" dan tampilkan semua pesan panjang</string>
+    <string name="tools">Tools</string>
 </resources>
