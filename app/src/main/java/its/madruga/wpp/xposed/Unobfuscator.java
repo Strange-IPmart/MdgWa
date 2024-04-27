@@ -954,15 +954,15 @@ public class Unobfuscator {
         });
     }
 
-    public static Method loadPinnedLimit2Method(ClassLoader loader) throws Exception {
-        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
-            var id = UnobfuscatorCache.getInstance().getOfuscateIdString("Unpin All");
-            MethodDataList result = dexkit.findMethod(new FindMethod().matcher(new MethodMatcher().addUsingNumber(id)));
-            if (result.isEmpty()) throw new Exception("PinnedLimit2 method not found");
-            var clazz = result.get(0).getDeclaredClass().getInstance(loader);
-            return Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.getReturnType().equals(boolean.class)).findFirst().orElse(null);
-        });
-    }
+//    public static Method loadPinnedLimit2Method(ClassLoader loader) throws Exception {
+//        return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
+//            var id = UnobfuscatorCache.getInstance().getOfuscateIdString("Unpin All");
+//            MethodDataList result = dexkit.findMethod(new FindMethod().matcher(new MethodMatcher().addUsingNumber(id)));
+//            if (result.isEmpty()) throw new Exception("PinnedLimit2 method not found");
+//            var clazz = result.get(0).getDeclaredClass().getInstance(loader);
+//            return Arrays.stream(clazz.getDeclaredMethods()).filter(m -> m.getReturnType().equals(boolean.class)).findFirst().orElse(null);
+//        });
+//    }
 
     public static Method loadPinnedHashSetMethod(ClassLoader loader) throws Exception {
         return UnobfuscatorCache.getInstance().getMethod(loader, () -> {
