@@ -69,8 +69,8 @@
     <string name="novaconfig">Nuovo Stile delle Impostazioni</string>
     <string name="novaconfig_sum">Abilita il nuovo stile delle impostazioni, con la foto del profilo sulla barra degli strumenti della schermata iniziale</string>
     <string name="novahome_sum">Abilita il nuovo stile della Home, con navigazione in basso</string>
-    <string name="novofiltro">Filtra le chat</string>
-    <string name="novofiltro_sum">Abilita le chat con filtro nativo, situate nella parte superiore della schermata iniziale, filtrando contatti, affari e altri</string>
+    <string name="novofiltro">Funzioni di Ricerca</string>
+    <string name="novofiltro_sum">Scegli quale funzione di ricerca usare nella schermata principale</string>
     <string name="menuwicon">Icone del menu</string>
     <string name="menuwicon_sum">Aggiungi icone accanto alle opzioni di menu nell\'app</string>
     <string name="strokebuttons">Tratto dei pulsanti</string>
